@@ -1,0 +1,16 @@
+{
+  "name": "ee-exam-app",
+  "version": "1.0.0",
+  "description": "電機技師 2027 備考作戰中心 — 網頁前台 + Notion 後端",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
