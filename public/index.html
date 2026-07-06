@@ -727,7 +727,7 @@ body{margin:0}
 <div class="fchips">
 <sc-for list="{{fSubjChips}}" as="c" hint-placeholder-count="7"><button class="{{c.cls}}" onClick="{{ c.pick }}">{{c.name}}</button></sc-for>
 </div>
-<div class="fcount">共 {{fCount}} 條公式 · ☆ 點星號標記常忘，會進每日閃卡</div>
+<div class="fcount">共 {{fCount}} 條公式 · ☆ 點星號標記常忘，��進每日閃卡</div>
 <div class="fgrid">
 <sc-for list="{{fFiltered}}" as="f" hint-placeholder-count="6">
 <div class="{{f.cls}}">
@@ -1048,7 +1048,7 @@ const FORMULAS = [
   {id:'f2', subj:'工程數學', name:'二階常微分 · 重根解', latex:'y(t)=(C_1+C_2t)e^{rt}', desc:'特徵方程重根時通解要乘上 t，最常漏。', tags:['ODE','重根'], blind:false},
   {id:'f3', subj:'工程數學', name:'傅立葉級數係數', latex:'a_n=\\frac{2}{T}\\int_{0}^{T}f(t)\\cos\\!\\left(\\tfrac{2\\pi n}{T}t\\right)dt', desc:'奇偶函數可先判斷哪些係數為 0 省時間。', tags:['傅立葉','週期'], blind:false},
   {id:'f4', subj:'電路學', name:'一階 RC 暫態響應', latex:'v(t)=v(\\infty)+\\bigl[v(0^{+})-v(\\infty)\\bigr]e^{-t/\\tau},\\quad \\tau=RC', desc:'三要素法：初值、終值、時間常數，秒解暫態。', tags:['暫態','RC','τ'], blind:true},
-  {id:'f5', subj:'電路學', name:'三相功率', latex:'P=\\sqrt{3}\\,V_L I_L\\cos\\phi', desc:'線電壓線電流，別跟相值搞混。', tags:['三相','功率'], blind:false},
+  {id:'f5', subj:'電路學', name:'三相功率', latex:'P=\\sqrt{3}\\,V_L I_L\\cos\\phi', desc:'線電壓線電��，別跟相值搞混。', tags:['三相','功率'], blind:false},
   {id:'f6', subj:'電路學', name:'諧振頻率', latex:'f_0=\\frac{1}{2\\pi\\sqrt{LC}}', desc:'RLC 串並聯共振同式，Q 值另算。', tags:['諧振','LC'], blind:false},
   {id:'f7', subj:'電子學', name:'BJT 小訊號跨導', latex:'g_m=\\frac{I_C}{V_T},\\quad V_T\\approx26\\,\\text{mV}', desc:'先定直流工作點 I_C 再算增益。', tags:['BJT','小訊號'], blind:true},
   {id:'f8', subj:'電子學', name:'反相放大器增益', latex:'A_v=-\\frac{R_f}{R_1}', desc:'運放虛短虛斷，負號代表反相。', tags:['運放','回授'], blind:false},
@@ -1071,7 +1071,7 @@ const VIDEOS = [
   {id:'v6', subj:'電子學', chapter:'運算放大器與回授', title:'運放虛短虛斷與回授增益', tag:'解題', min:33, prog:0},
   {id:'v7', subj:'電機機械', chapter:'變壓器', title:'變壓器等效電路與阻抗換算', tag:'重點整理', min:40, prog:12},
   {id:'v8', subj:'電機機械', chapter:'感應電動機', title:'感應機轉差率與轉矩特性', tag:'觀念', min:44, prog:0},
-  {id:'v9', subj:'電力系統', chapter:'對稱成分', title:'對稱成分法與序網路', tag:'觀念', min:50, prog:0},
+  {id:'v9', subj:'電力系統', chapter:'對稱成分', title:'對稱成分法與序網���', tag:'觀念', min:50, prog:0},
   {id:'v10', subj:'電力系統', chapter:'故障分析', title:'單線接地故障電流計算', tag:'解題', min:37, prog:0},
   {id:'v11', subj:'工業配電', chapter:'功因改善', title:'功因改善電容量計算', tag:'解題', min:26, prog:55},
 ];
@@ -1220,11 +1220,19 @@ class Component extends DCLogic {
   nbKey=(subj)=>'nblm_'+(subj||'general');
   nbGet=(subj)=>{ const nb=this.state.notebooks&&this.state.notebooks[subj]; if(nb&&nb.url) return nb.url; try{ return localStorage.getItem(this.nbKey(subj))||''; }catch(_){ return ''; } };
   nbSet=(subj,url)=>{ try{ localStorage.setItem(this.nbKey(subj),url||''); }catch(_){}
-    const nb=this.state.notebooks&&this.state.notebooks[subj];
-    if(nb&&nb.id){ this.setState(s=>({notebooks:{...s.notebooks,[subj]:{...nb,url:url||''}}})); if(this.state.serverOn){ this.api('/api/notebooks/'+nb.id,'PATCH',{連結:url||''}).catch(()=>{}); } } };
+    const cleanSubj=(subj||'').trim(); if(!cleanSubj) return;
+    const nb=this.state.notebooks&&this.state.notebooks[cleanSubj];
+    this.setState(s=>({notebooks:{...s.notebooks,[cleanSubj]:{...(s.notebooks&&s.notebooks[cleanSubj]||{}),url:url||''}}}));
+    if(this.state.serverOn){
+      const done=(r)=>{ if(r&&r.id){ this.setState(s=>({notebooks:{...s.notebooks,[cleanSubj]:{id:r.id,url:r.連結||url||''}}})); } };
+      if(nb&&nb.id){ this.api('/api/notebooks/'+nb.id,'PATCH',{連結:url||''}).then(done).catch(()=>{}); }
+      else { this.api('/api/notebooks/'+encodeURIComponent(cleanSubj),'PUT',{連結:url||''}).then(done).catch(()=>{}); }
+    }
+  };
   copyText=(t,btn)=>{ const done=()=>{ if(btn){ const o=btn.textContent; btn.textContent='✓ 已複製'; setTimeout(()=>{ btn.textContent=o; },1400); } }; try{ if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(done,()=>{}); return; } }catch(_){} try{ const ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done(); }catch(e){} };
   syncNb=()=>{
-    const box=document.querySelector('.memnb');
+    const pickVisible=(sel)=>{ const a=Array.from(document.querySelectorAll(sel)); return a.find(el=>el.offsetParent!==null) || a[a.length-1] || null; };
+    const box=pickVisible('.memnb');
     if(box){
       const sj=(this.state.timerSubj||'').split(' · ');
       const subj=sj[0]||'', chap=sj[1]||sj[0]||'本章';
@@ -1240,12 +1248,13 @@ class Component extends DCLogic {
         const open=document.createElement('a'); open.className='btn sm'; open.textContent='🔗 開啟 NotebookLM'; open.href=saved||'https://notebooklm.google.com/'; open.target='_blank'; open.rel='noopener'; open.style.textDecoration='none'; row.appendChild(open);
         box.appendChild(row);
         const inp=document.createElement('input'); inp.type='url'; inp.placeholder='貼上這一科的 NotebookLM 筆記本連結（會自動記住）'; inp.value=saved; inp.style.cssText='width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;font-size:12.5px;font-family:inherit;background:var(--surf2);color:var(--ink2);box-sizing:border-box';
-        inp.onchange=()=>{ const v=inp.value.trim(); this.nbSet(subj,v); open.href=v||'https://notebooklm.google.com/'; };
+        const saveInp=()=>{ const v=inp.value.trim(); this.nbSet(subj,v); open.href=v||'https://notebooklm.google.com/'; };
+        inp.onchange=saveInp; inp.onblur=saveInp; inp.addEventListener('keydown',(ev)=>{ if(ev.key==='Enter'){ ev.preventDefault(); saveInp(); inp.blur(); } });
         box.appendChild(inp);
         const tip=document.createElement('div'); tip.style.cssText='font-size:11px;color:var(--mut);margin-top:7px;line-height:1.6'; tip.textContent='把這章教材（PDF／筆記）上傳到 NotebookLM，貼上 Prompt 就會依你的教材出題。連結存起來後，下次同一科可直接開。'; box.appendChild(tip);
       }
     }
-    const slot=document.querySelector('.nbradio-slot');
+    const slot=pickVisible('.nbradio-slot');
     if(slot){
       const due=(this.state.wrong||[]).filter(w=>w.status!=='已攻克' && (w.due||0)<=0);
       const sig=due.map(w=>w.id).join(',');
@@ -1374,11 +1383,12 @@ class Component extends DCLogic {
     const tgt=this.state.chapters.find(c=>c.id===id); if(!tgt) return; const nv=!tgt.rec;
     this.setState(s=>({chapters:s.chapters.map(c=>c.id===id?{...c,rec:nv}:c)}));
     if(this.state.serverOn && String(id).includes('-')){ this.api('/api/chapters/'+id,'PATCH',{已錄影:nv}).catch(()=>{}); } };
+  toast=(msg,ms)=>{ clearTimeout(this._toastT); this.setState({wToast:msg},()=>{ this._toastT=setTimeout(()=>this.setState({wToast:''}), ms||2800); }); };
   exportWrong=()=>{ const hd={}; const k=this.appKey(); if(k) hd['X-App-Key']=k;
     fetch('/api/wrong/export',{headers:hd}).then(r=>{ if(!r.ok) throw new Error('http '+r.status); return r.blob(); }).then(b=>{
       const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='wrong-export-'+this.todayKey()+'.md'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      this.setState({wToast:'⬇ 已匯出 · 丟進 NotebookLM 當來源即可出題'});
-    }).catch(()=>this.setState({wToast:'匯出失敗，請確認伺服器連線'})); };
+      this.toast('⬇ 已匯出 · 丟進 NotebookLM 當來源即可出題');
+    }).catch(()=>this.toast('匯出失敗，請確認伺服器連線')); };
   startReview=(w)=>this.setState({review:w, reviewFlip:false});
   flipReview=()=>this.setState({reviewFlip:true});
   closeReview=()=>this.setState({review:null, reviewFlip:false});

@@ -339,6 +339,29 @@ app.patch("/api/notebooks/:id", async (req, res) => {
   } catch (e) { res.status(e.status || 500).json({ error: e.message }); }
 });
 
+// 依科目 upsert NotebookLM 連結：避免前端還沒拿到「科目筆記本」列 id 時，只存 localStorage、沒有寫回 Notion
+app.put("/api/notebooks/:subject", async (req, res) => {
+  try {
+    const subject = decodeURIComponent(req.params.subject || "").trim();
+    if (!subject) throw new Error("缺少科目");
+    const dbId = await notebooksDb();
+    const link = typeof req.body.連結 === "string" ? req.body.連結 : "";
+    const found = await notion(`/databases/${dbId}/query`, "POST", {
+      page_size: 1,
+      filter: { property: "科目", title: { equals: subject } },
+    });
+    const props = {
+      "科目": { title: [{ text: { content: subject } }] },
+      "連結": { url: link || null },
+    };
+    const data = found.results && found.results[0]
+      ? await notion(`/pages/${found.results[0].id}`, "PATCH", { properties: props })
+      : await notion(`/pages`, "POST", { parent: { database_id: dbId }, properties: props });
+    bust("notebooks");
+    res.json(mapNotebook(data));
+  } catch (e) { res.status(e.status || 500).json({ error: e.message }); }
+});
+
 // ---- 錯題：編輯內容 ----
 app.patch("/api/wrong/:id", async (req, res) => {
   try {
