@@ -39,7 +39,7 @@ body{margin:0}
 .xpfill{height:100%;background:linear-gradient(90deg,var(--pri),var(--acc));border-radius:6px;transition:width .5s}
 .xpmeta{font-size:10.5px;color:var(--mut);margin-top:6px;display:flex;justify-content:space-between;font-family:'Space Grotesk'}
 .main{flex:1;min-width:0;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--bg2),var(--bg));position:relative;z-index:0}
-.siteart{position:fixed;left:236px;top:0;right:0;bottom:0;z-index:0;pointer-events:none;background-image:url(assets/bg/site-wide.png);background-size:118% auto;background-position:center 46%;background-repeat:no-repeat;opacity:.35}
+.siteart{position:fixed;left:236px;top:0;right:0;bottom:0;z-index:0;pointer-events:none;background-image:url(assets/bg/site-wide.webp);background-size:118% auto;background-position:center 46%;background-repeat:no-repeat;opacity:.35}
 .app.tb .siteart{opacity:.42}
 .bp{background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:34px 34px;background-position:center;opacity:0}
 .app.tc .bp{opacity:.5}
@@ -1100,30 +1100,46 @@ class Component extends DCLogic {
   componentDidMount(){
     this._t = setInterval(()=>{
       if(this.state.running && this.state.sec>0){
-        this.setState(s=>{ const ns=s.sec-1; return {sec:ns, focusTotal:s.focusTotal+1, running:ns>0}; }, ()=>{ this._tick=(this._tick||0)+1; if(this._tick%20===0 || this.state.sec===0){ this.saveDaily(); } });
+        this.setState(s=>{ const ns=s.sec-1; return {sec:ns, focusTotal:s.focusTotal+1, running:ns>0}; }, ()=>{ this._tick=(this._tick||0)+1; if(this._tick%90===0 || this.state.sec===0){ this.saveDaily(); } });
       }
     },1000);
     this.renderKatex();
+    this.restoreLocal();
     this.loadServer();
+    this._flush=()=>{ if(document.visibilityState==='hidden'){ this.saveDaily(true); } };
+    document.addEventListener('visibilitychange', this._flush);
+    this._flushPh=()=>this.saveDaily(true);
+    window.addEventListener('pagehide', this._flushPh);
   }
-  componentWillUnmount(){ clearInterval(this._t); }
-  componentDidUpdate(pp,ps){ if(this.state.wToast && this.state.wToast!==ps.wToast){ clearTimeout(this._toastT); this._toastT=setTimeout(()=>this.setState({wToast:''}),2800); } this.renderKatex(); this.syncPlayer(); this.syncNb(); }
-  api=(p,method,body)=>fetch(p,{method:method||'GET',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined}).then(r=>{ if(!r.ok) throw new Error('http '+r.status); return r.json(); });
+  componentWillUnmount(){ clearInterval(this._t); document.removeEventListener('visibilitychange', this._flush); window.removeEventListener('pagehide', this._flushPh); }
+  componentDidUpdate(pp,ps){ if(this.state.wToast && this.state.wToast!==ps.wToast){ clearTimeout(this._toastT); this._toastT=setTimeout(()=>this.setState({wToast:''}),2800); } this.renderKatex(); this.syncPlayer(); this.syncNb(); this.persistLocal(); }
+  appKey=()=>{ try{ return localStorage.getItem('ee_app_key')||''; }catch(_){ return ''; } };
+  askKey=()=>{ const k=prompt('請輸入 APP_KEY（與 Render 環境變數相同的金鑰）'); const v=k?k.trim():''; if(v){ try{ localStorage.setItem('ee_app_key',v); }catch(_){} } return v; };
+  setSync=(st,msg)=>{ let el=document.getElementById('syncdot'); if(!el){ el=document.createElement('div'); el.id='syncdot'; el.style.cssText='position:fixed;left:14px;bottom:14px;z-index:9999;font-size:11px;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surf);color:var(--ink2);pointer-events:none;transition:opacity .3s;opacity:1'; document.body.appendChild(el); } const map={ok:'\u2601\ufe0f 已同步',busy:'\u23f3 同步中…',err:'\u26a0\ufe0f 同步失敗',off:'\ud83d\udcf4 離線模式（僅存本機）'}; el.textContent=(map[st]||'')+(msg?(' · '+msg):''); el.style.borderColor= st==='err'?'var(--bad)':(st==='off'?'var(--warn)':'var(--line)'); el.style.opacity='1'; clearTimeout(this._syncT); if(st==='ok'){ this._syncT=setTimeout(()=>{ const d=document.getElementById('syncdot'); if(d) d.style.opacity='0'; },2200); } };
+  api=(p,method,body,opts)=>{ opts=opts||{}; this.setSync('busy'); const doFetch=(key)=>fetch(p,{method:method||'GET',headers:Object.assign({'Content-Type':'application/json'}, key?{'X-App-Key':key}:{}),body:body?JSON.stringify(body):undefined,keepalive:!!opts.keepalive,signal:opts.keepalive?undefined:(window.AbortSignal&&AbortSignal.timeout?AbortSignal.timeout(opts.timeoutMs||20000):undefined)}); return doFetch(this.appKey()).then(r=>{ if(r.status===401){ const k=this.askKey(); if(k) return doFetch(k); } return r; }).then(r=>{ if(!r.ok) throw new Error('http '+r.status); return r.json().then(j=>{ this.setSync('ok'); return j; }); }).catch(e=>{ this.setSync(this.state.serverOn?'err':'off', String(p).replace('/api/','').split('/')[0]); throw e; }); };
   daysUntil=(d)=>{ if(!d) return 0; const t=new Date(d); const now=new Date(); now.setHours(0,0,0,0); t.setHours(0,0,0,0); return Math.round((t-now)/86400000); };
   mapWrongIn=(n)=>({ id:n.id, subj:n.科目||'工程數學', chapter:n.章節||'(未填章節)', q:n.題目摘要||'', source:n.來源||'自編', cause:n.卡點原因||'觀念不熟', blind:n.盲點||'', correct:n.正解重點||'', streak:n.複習次數||0, status:(n.已攻克?'已攻克':((n.複習次數||0)>0?'複習中':'新錯題')), due:Math.max(0,this.daysUntil(n.下次複習日)) });
-  loadServer=()=>{
-    this.api('/api/health').then(h=>{
-      if(!h||!h.tokenSet) return;
+  loadServer=(attempt)=>{
+    attempt=attempt||1;
+    this.api('/api/health',undefined,undefined,{timeoutMs:30000}).then(h=>{
+      if(!h||!h.tokenSet){ this.setSync('off','後端未設定 NOTION_TOKEN'); return; }
       this.setState({serverOn:true});
       this.api('/api/chapters').then(rows=>{ if(Array.isArray(rows)&&rows.length){ this.setState({chapters:rows.map(r=>({id:r.id, subj:r.科目, name:r.章節, wave:r.波次||'第1波', status:r.狀態||'待讀'}))}); } }).catch(()=>{});
       this.api('/api/wrong').then(rows=>{ if(Array.isArray(rows)&&rows.length){ this.setState({wrong:rows.map(this.mapWrongIn)}); } }).catch(()=>{});
       this.api('/api/formulas').then(rows=>{ if(Array.isArray(rows)&&rows.length){ const forgot=Object.fromEntries(rows.filter(f=>f.blind).map(f=>[f.id,true])); this.setState({formulas:rows, forgot}); } }).catch(()=>{});
       this.api('/api/videos').then(rows=>{ if(Array.isArray(rows)&&rows.length){ const vProg=Object.fromEntries(rows.map(v=>[v.id, v.prog||0])); this.setState({videos:rows, vProg}); } }).catch(()=>{});
       this.api('/api/daily').then(rows=>{ if(Array.isArray(rows)){ const tk=this.todayKey(); const t=rows.find(d=>d.日期===tk); const ns={daily:rows}; if(t){ ns.focusTotal=Math.max(this.state.focusTotal,(t.專注分鐘||0)*60); ns.distractions=Math.max(this.state.distractions,(t.分心次數||0)); const qd={...this.state.questDone}; for(let i=0;i<(t.完成關卡||0)&&i<3;i++){ qd['q'+i]=true; } ns.questDone=qd; } this.setState(ns); } }).catch(()=>{});
-    }).catch(()=>{});
+    }).catch(()=>{ if(attempt<3){ this.setSync('busy','喚醒伺服器 '+attempt+'/3'); setTimeout(()=>this.loadServer(attempt+1), 5000); } else { this.setSync('off'); } });
   };
+  restoreLocal=()=>{ try{ const raw=localStorage.getItem('ee_state_v1'); if(!raw) return; const sv=JSON.parse(raw); const merge={}; if(sv.day===this.todayKey()){ merge.focusTotal=Math.max(this.state.focusTotal, sv.focusTotal||0); merge.distractions=Math.max(this.state.distractions, sv.distractions||0); merge.questDone=Object.assign({}, this.state.questDone, sv.questDone||{}); }
+    if(Array.isArray(sv.chapters)&&sv.chapters.length) merge.chapters=sv.chapters;
+    if(Array.isArray(sv.wrong)&&sv.wrong.length) merge.wrong=sv.wrong.map(w=>Object.assign({},w));
+    if(sv.forgot) merge.forgot=sv.forgot;
+    if(sv.vProg) merge.vProg=Object.assign({}, this.state.vProg, sv.vProg);
+    this.setState(merge); }catch(_){} };
+  persistLocal=()=>{ clearTimeout(this._pT); this._pT=setTimeout(()=>{ try{ const st=this.state; localStorage.setItem('ee_state_v1', JSON.stringify({day:this.todayKey(), focusTotal:st.focusTotal, distractions:st.distractions, questDone:st.questDone, chapters:st.chapters, wrong:st.wrong, forgot:st.forgot, vProg:st.vProg})); }catch(_){} },600); };
   todayKey=()=>{ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
-  saveDaily=()=>{ if(!this.state.serverOn) return; const focusMin=Math.floor(this.state.focusTotal/60); const done=Object.keys(this.state.questDone).filter(k=>this.state.questDone[k]).length; const body={日期:this.todayKey(), 專注分鐘:focusMin, 完成關卡:done, XP:(this._todayXp||0), 分心次數:this.state.distractions, 達標:focusMin>=120}; this.api('/api/daily','PUT',body).then(r=>{ if(r&&r.日期){ this.setState(s=>({daily:[...(s.daily||[]).filter(d=>d.日期!==r.日期), r]})); } }).catch(()=>{}); };
+  saveDaily=(flush)=>{ if(!this.state.serverOn) return; const focusMin=Math.floor(this.state.focusTotal/60); const done=Object.keys(this.state.questDone).filter(k=>this.state.questDone[k]).length; const body={日期:this.todayKey(), 專注分鐘:focusMin, 完成關卡:done, XP:(this._todayXp||0), 分心次數:this.state.distractions, 達標:focusMin>=120}; this.api('/api/daily','PUT',body,{keepalive:!!flush}).then(r=>{ if(r&&r.日期){ this.setState(s=>({daily:[...(s.daily||[]).filter(d=>d.日期!==r.日期), r]})); } }).catch(()=>{}); };
   embedUrl=(url)=>{
     if(!url) return null;
     let m=url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/))([\w-]{11})/);

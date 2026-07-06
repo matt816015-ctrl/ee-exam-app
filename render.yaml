@@ -14,3 +14,5 @@ services:
         value: d2dd115dbf384750b138e20c39d2e2fe
       - key: NOTION_DB_WRONG
         value: 138e5f939f79405d9b072fc61900e920
+      - key: APP_KEY
+        sync: false

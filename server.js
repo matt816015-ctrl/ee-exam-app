@@ -1,13 +1,25 @@
 // 電機技師 2027 備考作戰中心 — 後端 (Render)
 // 持有 Notion 金鑰，安全代呼叫 Notion API；前台只跟這支服務溝通。
 import express from "express";
+import compression from "compression";
 import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
+app.use(compression());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "public"), { maxAge: "7d", index: ["index.html"], setHeaders(res, p) { if (p.endsWith(".html")) res.setHeader("Cache-Control", "no-cache"); } }));
+
+// ---- API 金鑰驗證：設定 APP_KEY 環境變數後，所有 /api 請求須帶 X-App-Key（health 除外）----
+const APP_KEY = process.env.APP_KEY || "";
+app.use("/api", (req, res, next) => {
+  if (!APP_KEY) return next();                    // 未設定則不啟用（相容舊部署）
+  if (req.path === "/health") return next();      // 健康檢查免驗
+  const key = req.get("X-App-Key") || req.query.key;
+  if (key === APP_KEY) return next();
+  res.status(401).json({ error: "unauthorized" });
+});
 
 // ---- 環境變數（在 Render 後台設定，不要寫進程式碼）----
 const NOTION_TOKEN = process.env.NOTION_TOKEN;
@@ -32,6 +44,7 @@ async function notion(pathname, method = "GET", body) {
     method,
     headers: notionHeaders(),
     body: body ? JSON.stringify(body) : undefined,
+    signal: AbortSignal.timeout(10000), // Notion 卡住 10 秒即中止，避免請求懸掛
   });
   const data = await res.json();
   if (!res.ok) {
@@ -140,14 +153,26 @@ async function resolveDb(title) {
   const list = data.results || [];
   const hit =
     list.find((d) => txt(d.title) === title) ||
-    list.find((d) => txt(d.title).indexOf(title) === 0) ||
-    list[0];
+    list.find((d) => txt(d.title).indexOf(title) === 0);
+  // 刻意不 fallback 到 list[0]：名稱對不上就明確報錯，避免鎖定到錯的資料庫
   if (!hit) throw new Error(`找不到資料庫：${title}（請確認整合已加入該資料庫）`);
   _dbCache[title] = hit.id;
   return hit.id;
 }
 async function videosDb() { return DB_VIDEOS_ENV || (await resolveDb("課程影片")); }
 async function formulasDb() { return DB_FORMULAS_ENV || (await resolveDb("公式庫")); }
+
+// ---- 讀取快取：45 秒 TTL，寫入時主動失效，減少 Notion 呼叫並加速冷啟動後載入 ----
+const _cache = new Map();
+const CACHE_MS = 45000;
+async function cached(key, fn) {
+  const hit = _cache.get(key);
+  if (hit && Date.now() - hit.t < CACHE_MS) return hit.v;
+  const v = await fn();
+  _cache.set(key, { v, t: Date.now() });
+  return v;
+}
+const bust = (key) => _cache.delete(key);
 
 // ---------------- API ----------------
 
@@ -158,7 +183,7 @@ app.get("/api/health", (req, res) => {
 // 讀全部章節
 app.get("/api/chapters", async (req, res) => {
   try {
-    const rows = await queryAll(DB_CHAPTERS, mapChapter);
+    const rows = await cached("chapters", () => queryAll(DB_CHAPTERS, mapChapter));
     res.json(rows);
   } catch (e) {
     res.status(e.status || 500).json({ error: e.message });
@@ -172,6 +197,7 @@ app.patch("/api/chapters/:id", async (req, res) => {
     if (typeof req.body.狀態 === "string") props["狀態"] = { select: { name: req.body.狀態 } };
     if (typeof req.body.已錄影 === "boolean") props["已錄影"] = { checkbox: req.body.已錄影 };
     const data = await notion(`/pages/${req.params.id}`, "PATCH", { properties: props });
+    bust("chapters");
     res.json(mapChapter(data));
   } catch (e) {
     res.status(e.status || 500).json({ error: e.message });
@@ -181,7 +207,7 @@ app.patch("/api/chapters/:id", async (req, res) => {
 // 讀全部錯題
 app.get("/api/wrong", async (req, res) => {
   try {
-    const rows = await queryAll(DB_WRONG, mapWrong);
+    const rows = await cached("wrong", () => queryAll(DB_WRONG, mapWrong));
     res.json(rows);
   } catch (e) {
     res.status(e.status || 500).json({ error: e.message });
@@ -210,6 +236,7 @@ app.post("/api/wrong", async (req, res) => {
     props["下次複習日"] = { date: { start: today.toISOString().slice(0, 10) } };
     props["已攻克"] = { checkbox: false };
     const data = await notion(`/pages`, "POST", { parent: { database_id: DB_WRONG }, properties: props });
+    bust("wrong");
     res.json(mapWrong(data));
   } catch (e) {
     res.status(e.status || 500).json({ error: e.message });
@@ -233,6 +260,7 @@ app.patch("/api/wrong/:id/review", async (req, res) => {
       "已攻克": { checkbox: ok && count >= 3 },
     };
     const data = await notion(`/pages/${req.params.id}`, "PATCH", { properties: props });
+    bust("wrong");
     res.json(mapWrong(data));
   } catch (e) {
     res.status(e.status || 500).json({ error: e.message });
@@ -242,7 +270,7 @@ app.patch("/api/wrong/:id/review", async (req, res) => {
 // 讀全部影片
 app.get("/api/videos", async (req, res) => {
   try {
-    const rows = await queryAll(await videosDb(), mapVideo);
+    const rows = await cached("videos", async () => queryAll(await videosDb(), mapVideo));
     res.json(rows);
   } catch (e) {
     res.status(e.status || 500).json({ error: e.message });
@@ -257,6 +285,7 @@ app.patch("/api/videos/:id", async (req, res) => {
     if (typeof req.body.時長分 === "number") props["時長分"] = { number: req.body.時長分 };
     if (typeof req.body.影片連結 === "string") props["影片連結"] = { url: req.body.影片連結 || null };
     const data = await notion(`/pages/${req.params.id}`, "PATCH", { properties: props });
+    bust("videos");
     res.json(mapVideo(data));
   } catch (e) {
     res.status(e.status || 500).json({ error: e.message });
@@ -266,7 +295,7 @@ app.patch("/api/videos/:id", async (req, res) => {
 // 讀全部公式
 app.get("/api/formulas", async (req, res) => {
   try {
-    const rows = await queryAll(await formulasDb(), mapFormula);
+    const rows = await cached("formulas", async () => queryAll(await formulasDb(), mapFormula));
     res.json(rows);
   } catch (e) {
     res.status(e.status || 500).json({ error: e.message });
@@ -279,6 +308,7 @@ app.patch("/api/formulas/:id", async (req, res) => {
     const props = {};
     if (typeof req.body.常忘 === "boolean") props["常忘"] = { checkbox: req.body.常忘 };
     const data = await notion(`/pages/${req.params.id}`, "PATCH", { properties: props });
+    bust("formulas");
     res.json(mapFormula(data));
   } catch (e) {
     res.status(e.status || 500).json({ error: e.message });
@@ -303,7 +333,7 @@ async function dailyDb() { return process.env.NOTION_DB_DAILY || (await resolveD
 // 讀全部每日戰績
 app.get("/api/daily", async (req, res) => {
   try {
-    const rows = await queryAll(await dailyDb(), mapDaily);
+    const rows = await cached("daily", async () => queryAll(await dailyDb(), mapDaily));
     res.json(rows);
   } catch (e) {
     res.status(e.status || 500).json({ error: e.message });
@@ -334,6 +364,7 @@ app.put("/api/daily", async (req, res) => {
       props["日期"] = { title: [{ text: { content: date } }] };
       data = await notion(`/pages`, "POST", { parent: { database_id: dbId }, properties: props });
     }
+    bust("daily");
     res.json(mapDaily(data));
   } catch (e) {
     res.status(e.status || 500).json({ error: e.message });
