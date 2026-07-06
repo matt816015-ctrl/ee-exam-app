@@ -178,7 +178,8 @@ body{margin:0}
 .chrow .st{width:24px;height:24px;border-radius:7px;background:var(--surf2);border:1px solid var(--line);display:grid;place-items:center;font-size:11px;font-family:'Space Grotesk';color:var(--mut);flex:0 0 auto}
 .chrow .nm{font-size:13.5px;flex:1;min-width:0}
 .chrow .wp{font-size:10px;padding:2px 8px;border-radius:20px;color:var(--mut);border:1px solid var(--line)}
-.chrow .ic{color:var(--mut);font-size:13px;cursor:pointer}
+.chrow .ic{color:var(--mut);font-size:13px;cursor:pointer;opacity:.45}
+.chrow .ic.recon{opacity:1;color:var(--good)}
 .sel{font-size:12px;font-family:'Noto Sans TC';border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--surf);color:var(--ink);cursor:pointer}
 .overlay{position:fixed;inset:0;background:rgba(28,36,43,.5);backdrop-filter:blur(3px);display:grid;place-items:center;z-index:60;padding:24px}
 .modal{background:var(--surf);border:1px solid var(--line);border-radius:20px;width:100%;max-width:420px;padding:26px;box-shadow:0 30px 80px -24px rgba(0,0,0,.5);text-align:center}
@@ -596,7 +597,7 @@ body{margin:0}
 <div class="chgroup">
 <div class="chhd"><span class="dot" style="background:{{g.color}}"></span><b>{{g.name}}</b><span class="c">{{g.done}}/{{g.total}} 已熟</span></div>
 <sc-for list="{{g.items}}" as="c" hint-placeholder-count="3">
-<div class="chrow"><span class="st">{{c.stIcon}}</span><span class="nm">{{c.name}}</span><span class="wp">{{c.wave}}</span><span class="ic" title="課程影片">▶</span><span class="ic" title="筆記">📝</span><select class="sel" value="{{c.status}}" data-id="{{c.id}}" onChange="{{ onStatus }}"><option>待讀</option><option>第一輪</option><option>歷屆題</option><option>已熟</option></select></div>
+<div class="chrow"><span class="st">{{c.stIcon}}</span><span class="nm">{{c.name}}</span><span class="wp">{{c.wave}}</span><span class="{{c.recCls}}" title="已錄影（點擊切換）" data-id="{{c.id}}" onClick="{{ onRec }}">🎬</span><span class="ic" title="筆記">📝</span><select class="sel" value="{{c.status}}" data-id="{{c.id}}" onChange="{{ onStatus }}"><option>待讀</option><option>第一輪</option><option>歷屆題</option><option>已熟</option></select></div>
 </sc-for>
 </div>
 </sc-for>
@@ -643,7 +644,7 @@ body{margin:0}
 </div>
 </sc-if>
 <div class="sec">
-<div class="sechd"><h3>🗃 錯題清單 <span class="badge">{{listCount}} 題</span></h3>
+<div class="sechd"><h3>🗃 錯題清單 <span class="badge">{{listCount}} 題</span> <button class="btn ghost sm" onClick="{{ exportWrong }}" title="匯出 Markdown，丟進 NotebookLM 當來源">⬇ 匯出給 NotebookLM</button></h3>
 <div class="wfilters">
 <input class="wsearch" placeholder="搜尋題目／章節…" value="{{wSearch}}" onInput="{{ onWSearch }}">
 <select class="sel" value="{{wFilterSubj}}" onChange="{{ setFSubj }}"><sc-for list="{{filterSubjs}}" as="o" hint-placeholder-count="7"><option>{{o}}</option></sc-for></select>
@@ -660,6 +661,8 @@ body{margin:0}
 <div class="streak sm"><sc-for list="{{w.streakDots}}" as="d" hint-placeholder-count="3"><span class="{{d.cls}}"></span></sc-for></div>
 <span class="wdue">{{w.dueLabel}}</span>
 <span class="wstatus-t" style="color:{{w.stColor}}">{{w.status}}</span>
+<span class="ic" title="編輯" onClick="{{ w.edit }}" style="cursor:pointer;color:var(--mut)">✎</span>
+<span class="ic" title="刪除" onClick="{{ w.del }}" style="cursor:pointer;color:var(--bad)">🗑</span>
 </div>
 </sc-for>
 </div>
@@ -887,7 +890,7 @@ body{margin:0}
 <sc-if value="{{addOpen}}" hint-placeholder-val="{{ false }}">
 <div class="overlay" onClick="{{ closeAdd }}">
 <div class="modal" style="max-width:480px;text-align:left" onClick="{{ stop }}">
-<div class="fx ac jb"><h3 style="margin:0">＋ 快速新增錯題</h3><button class="btn ghost sm" onClick="{{ closeAdd }}">✕</button></div>
+<div class="fx ac jb"><h3 style="margin:0">{{addTitle}}</h3><button class="btn ghost sm" onClick="{{ closeAdd }}">✕</button></div>
 <div class="ms" style="margin-bottom:14px">3 秒記下：題目＋科目＋錯因即可存，其餘選填</div>
 <label class="flbl">題目摘要 *</label>
 <textarea class="finput" rows="2" placeholder="一行寫下題目重點…" value="{{addForm.q}}" onInput="{{ onAddQ }}"></textarea>
@@ -898,6 +901,10 @@ body{margin:0}
 <div class="fgrid">
 <div><label class="flbl">錯因（關鍵）</label><select class="finput" value="{{addForm.cause}}" onChange="{{ onAddCause }}"><sc-for list="{{filterCauses}}" as="o" hint-placeholder-count="7"><option>{{o}}</option></sc-for></select></div>
 <div><label class="flbl">來源／年度</label><input class="finput" placeholder="例：110 高考" value="{{addForm.source}}" onInput="{{ onAddSource }}"></div>
+</div>
+<div class="fgrid">
+<div><label class="flbl">難度</label><select class="finput" value="{{addForm.diff}}" onChange="{{ onAddDiff }}"><option>易</option><option>中</option><option>難</option></select></div>
+<div><label class="flbl">題型（選填）</label><select class="finput" value="{{addForm.qtype}}" onChange="{{ onAddQtype }}"><option value="">—</option><sc-for list="{{typeOpts}}" as="o" hint-placeholder-count="18"><option>{{o}}</option></sc-for></select></div>
 </div>
 <label class="flbl">我的盲點（為什麼錯）</label>
 <input class="finput" placeholder="這次卡在哪、想錯什麼…" value="{{addForm.blind}}" onInput="{{ onAddBlind }}">
@@ -995,6 +1002,7 @@ const CAUSES = {
 };
 const CAUSE_ORDER = Object.keys(CAUSES);
 const INTERVALS = [1,3,7,14,30]; // 間隔複習天數
+const TYPE_OPTS = ['對稱故障','非對稱故障','對稱成分','穩定度','潮流','標么','暫態','相量/AC','三相','拉氏/ODE','OPA/回授','BJT/MOS','變壓器','感應機','同步機','保護協調','短路計算','功因/負載'];
 // 範例錯題（題目摘要、來源、錯因、盲點、正解重點、狀態、連續答對、距下次複習天數）
 const WRONG_SEED = [
   {subj:'工程數學', chapter:'拉普拉斯轉換與反轉換', q:'求 f(t)=t·e^(-2t)·u(t) 的拉氏轉換', source:'108 高考 第三題', cause:'公式記錯', blind:'把 1/(s+a)² 記成 1/(s+a)，微分性質沒套', correct:'L{t·e^(-at)} = 1/(s+a)²，由 -d/ds 1/(s+a) 推得', status:'複習中', streak:1, due:0},
@@ -1083,7 +1091,7 @@ class Component extends DCLogic {
       questDone: {}, evoUnit: null,
       wrong: WRONG_SEED.map((w,i)=>({id:'w'+i, ...w})),
       wFilterSubj:'全部', wFilterCause:'全部', wFilterStatus:'全部', wSearch:'',
-      addOpen:false, addForm:{subj:'工程數學', chapter:'', q:'', source:'', cause:'觀念不熟', blind:'', correct:''},
+      addOpen:false, editId:null, addForm:{subj:'工程數學', chapter:'', q:'', source:'', cause:'觀念不熟', diff:'中', qtype:'', blind:'', correct:''}, notebooks:{},
       review:null, reviewFlip:false, wToast:'',
       fSearch:'', fSubj:'全部', fOnlyForgot:false,
       forgot: Object.fromEntries(FORMULAS.filter(f=>f.blind).map(f=>[f.id,true])),
@@ -1118,16 +1126,18 @@ class Component extends DCLogic {
   setSync=(st,msg)=>{ let el=document.getElementById('syncdot'); if(!el){ el=document.createElement('div'); el.id='syncdot'; el.style.cssText='position:fixed;left:14px;bottom:14px;z-index:9999;font-size:11px;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surf);color:var(--ink2);pointer-events:none;transition:opacity .3s;opacity:1'; document.body.appendChild(el); } const map={ok:'\u2601\ufe0f 已同步',busy:'\u23f3 同步中…',err:'\u26a0\ufe0f 同步失敗',off:'\ud83d\udcf4 離線模式（僅存本機）'}; el.textContent=(map[st]||'')+(msg?(' · '+msg):''); el.style.borderColor= st==='err'?'var(--bad)':(st==='off'?'var(--warn)':'var(--line)'); el.style.opacity='1'; clearTimeout(this._syncT); if(st==='ok'){ this._syncT=setTimeout(()=>{ const d=document.getElementById('syncdot'); if(d) d.style.opacity='0'; },2200); } };
   api=(p,method,body,opts)=>{ opts=opts||{}; this.setSync('busy'); const doFetch=(key)=>fetch(p,{method:method||'GET',headers:Object.assign({'Content-Type':'application/json'}, key?{'X-App-Key':key}:{}),body:body?JSON.stringify(body):undefined,keepalive:!!opts.keepalive,signal:opts.keepalive?undefined:(window.AbortSignal&&AbortSignal.timeout?AbortSignal.timeout(opts.timeoutMs||20000):undefined)}); return doFetch(this.appKey()).then(r=>{ if(r.status===401){ const k=this.askKey(); if(k) return doFetch(k); } return r; }).then(r=>{ if(!r.ok) throw new Error('http '+r.status); return r.json().then(j=>{ this.setSync('ok'); return j; }); }).catch(e=>{ this.setSync(this.state.serverOn?'err':'off', String(p).replace('/api/','').split('/')[0]); throw e; }); };
   daysUntil=(d)=>{ if(!d) return 0; const t=new Date(d); const now=new Date(); now.setHours(0,0,0,0); t.setHours(0,0,0,0); return Math.round((t-now)/86400000); };
-  mapWrongIn=(n)=>({ id:n.id, subj:n.科目||'工程數學', chapter:n.章節||'(未填章節)', q:n.題目摘要||'', source:n.來源||'自編', cause:n.卡點原因||'觀念不熟', blind:n.盲點||'', correct:n.正解重點||'', streak:n.複習次數||0, status:(n.已攻克?'已攻克':((n.複習次數||0)>0?'複習中':'新錯題')), due:Math.max(0,this.daysUntil(n.下次複習日)) });
+  causeAlias=(c)=>({'觀念不懂':'觀念不熟','計算失誤':'計算粗心','不會起手':'不會/沒學過'}[c]||c||'觀念不熟');
+  mapWrongIn=(n)=>({ id:n.id, subj:n.科目||'工程數學', chapter:n.章節||'(未填章節)', q:n.題目摘要||'', source:n.來源||'自編', cause:this.causeAlias(n.卡點原因), diff:n.難度||'', types:n.題型||[], blind:n.盲點||'', correct:n.正解重點||'', streak:n.複習次數||0, status:(n.已攻克?'已攻克':((n.複習次數||0)>0?'複習中':'新錯題')), due:Math.max(0,this.daysUntil(n.下次複習日)) });
   loadServer=(attempt)=>{
     attempt=attempt||1;
     this.api('/api/health',undefined,undefined,{timeoutMs:30000}).then(h=>{
       if(!h||!h.tokenSet){ this.setSync('off','後端未設定 NOTION_TOKEN'); return; }
       this.setState({serverOn:true});
-      this.api('/api/chapters').then(rows=>{ if(Array.isArray(rows)&&rows.length){ this.setState({chapters:rows.map(r=>({id:r.id, subj:r.科目, name:r.章節, wave:r.波次||'第1波', status:r.狀態||'待讀'}))}); } }).catch(()=>{});
+      this.api('/api/chapters').then(rows=>{ if(Array.isArray(rows)&&rows.length){ this.setState({chapters:rows.map(r=>({id:r.id, subj:r.科目, name:r.章節, wave:r.波次||'第1波', status:r.狀態||'待讀', rec:!!r.已錄影}))}); } }).catch(()=>{});
       this.api('/api/wrong').then(rows=>{ if(Array.isArray(rows)&&rows.length){ this.setState({wrong:rows.map(this.mapWrongIn)}); } }).catch(()=>{});
       this.api('/api/formulas').then(rows=>{ if(Array.isArray(rows)&&rows.length){ const forgot=Object.fromEntries(rows.filter(f=>f.blind).map(f=>[f.id,true])); this.setState({formulas:rows, forgot}); } }).catch(()=>{});
       this.api('/api/videos').then(rows=>{ if(Array.isArray(rows)&&rows.length){ const vProg=Object.fromEntries(rows.map(v=>[v.id, v.prog||0])); this.setState({videos:rows, vProg}); } }).catch(()=>{});
+      this.api('/api/notebooks').then(rows=>{ if(Array.isArray(rows)&&rows.length){ const nb={}; rows.forEach(r=>{ nb[r.科目]={id:r.id, url:r.連結||''}; if(r.連結){ try{ localStorage.setItem(this.nbKey(r.科目), r.連結); }catch(_){} } }); this.setState({notebooks:nb}); } }).catch(()=>{});
       this.api('/api/daily').then(rows=>{ if(Array.isArray(rows)){ const tk=this.todayKey(); const t=rows.find(d=>d.日期===tk); const ns={daily:rows}; if(t){ ns.focusTotal=Math.max(this.state.focusTotal,(t.專注分鐘||0)*60); ns.distractions=Math.max(this.state.distractions,(t.分心次數||0)); const qd={...this.state.questDone}; for(let i=0;i<(t.完成關卡||0)&&i<3;i++){ qd['q'+i]=true; } ns.questDone=qd; } this.setState(ns); } }).catch(()=>{});
     }).catch(()=>{ if(attempt<3){ this.setSync('busy','喚醒伺服器 '+attempt+'/3'); setTimeout(()=>this.loadServer(attempt+1), 5000); } else { this.setSync('off'); } });
   };
@@ -1208,8 +1218,10 @@ class Component extends DCLogic {
     box.appendChild(el);
   };
   nbKey=(subj)=>'nblm_'+(subj||'general');
-  nbGet=(subj)=>{ try{ return localStorage.getItem(this.nbKey(subj))||''; }catch(_){ return ''; } };
-  nbSet=(subj,url)=>{ try{ localStorage.setItem(this.nbKey(subj),url||''); }catch(_){} };
+  nbGet=(subj)=>{ const nb=this.state.notebooks&&this.state.notebooks[subj]; if(nb&&nb.url) return nb.url; try{ return localStorage.getItem(this.nbKey(subj))||''; }catch(_){ return ''; } };
+  nbSet=(subj,url)=>{ try{ localStorage.setItem(this.nbKey(subj),url||''); }catch(_){}
+    const nb=this.state.notebooks&&this.state.notebooks[subj];
+    if(nb&&nb.id){ this.setState(s=>({notebooks:{...s.notebooks,[subj]:{...nb,url:url||''}}})); if(this.state.serverOn){ this.api('/api/notebooks/'+nb.id,'PATCH',{連結:url||''}).catch(()=>{}); } } };
   copyText=(t,btn)=>{ const done=()=>{ if(btn){ const o=btn.textContent; btn.textContent='✓ 已複製'; setTimeout(()=>{ btn.textContent=o; },1400); } }; try{ if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(done,()=>{}); return; } }catch(_){} try{ const ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done(); }catch(e){} };
   syncNb=()=>{
     const box=document.querySelector('.memnb');
@@ -1334,18 +1346,39 @@ class Component extends DCLogic {
   setWFilter=(k,v)=>this.setState({[k]:v});
   onWSearch=(e)=>this.setState({wSearch:e.target.value});
   openAdd=()=>this.setState({addOpen:true});
-  closeAdd=()=>this.setState({addOpen:false});
+  closeAdd=()=>this.setState({addOpen:false, editId:null});
   setAdd=(k,v)=>this.setState(s=>({addForm:{...s.addForm,[k]:v}}));
   onAddField=(k)=>(e)=>this.setAdd(k, e.target.value);
-  saveWrong=()=>{ const f=this.state.addForm; if(!f.q.trim()){ this.setState({addOpen:false}); return; }
+  saveWrong=()=>{ const f=this.state.addForm; if(!f.q.trim()){ this.setState({addOpen:false, editId:null}); return; }
+    const types=f.qtype?[f.qtype]:[];
+    const body={題目摘要:f.q.trim(),科目:f.subj,章節:f.chapter||'(未填章節)',卡點原因:f.cause,難度:f.diff||'中',題型:types,盲點:f.blind,正解重點:f.correct,來源:f.source||'自編'};
+    const eid=this.state.editId;
+    if(eid){
+      this.setState(s=>({wrong:s.wrong.map(w=>w.id===eid?{...w, subj:f.subj, chapter:body.章節, q:body.題目摘要, source:body.來源, cause:f.cause, diff:f.diff, types, blind:f.blind, correct:f.correct}:w), addOpen:false, editId:null, wToast:'✎ 已更新錯題'}));
+      if(this.state.serverOn && String(eid).includes('-')){ this.api('/api/wrong/'+eid,'PATCH',body).catch(()=>{}); }
+      return;
+    }
     const tmpId='w'+Date.now();
-    const item={id:tmpId, subj:f.subj, chapter:f.chapter||'(未填章節)', q:f.q.trim(),
-      source:f.source||'自編', cause:f.cause, blind:f.blind, correct:f.correct, status:'新錯題', streak:0, due:1};
+    const item={id:tmpId, subj:f.subj, chapter:body.章節, q:body.題目摘要,
+      source:body.來源, cause:f.cause, diff:f.diff, types, blind:f.blind, correct:f.correct, status:'新錯題', streak:0, due:1};
     this.setState(s=>({wrong:[item,...s.wrong], addOpen:false,
-      addForm:{subj:'工程數學',chapter:'',q:'',source:'',cause:f.cause,blind:'',correct:''},
+      addForm:{subj:'工程數學',chapter:'',q:'',source:'',cause:f.cause,diff:'中',qtype:'',blind:'',correct:''},
       wToast:'已記下錯題 · 明天會回來考你'}));
-    if(this.state.serverOn){ this.api('/api/wrong','POST',{題目摘要:item.q,科目:item.subj,章節:item.chapter,卡點原因:item.cause,盲點:item.blind,正解重點:item.correct,來源:item.source}).then(r=>{ if(r&&r.id){ this.setState(s=>({wrong:s.wrong.map(w=>w.id===tmpId?this.mapWrongIn(r):w)})); } }).catch(()=>{}); }
+    if(this.state.serverOn){ this.api('/api/wrong','POST',body).then(r=>{ if(r&&r.id){ this.setState(s=>({wrong:s.wrong.map(w=>w.id===tmpId?this.mapWrongIn(r):w)})); } }).catch(()=>{}); }
   };
+  openEdit=(w)=>this.setState({addOpen:true, editId:w.id, addForm:{subj:w.subj, chapter:w.chapter==='(未填章節)'?'':w.chapter, q:w.q, source:w.source==='自編'?'':w.source, cause:w.cause, diff:w.diff||'中', qtype:(w.types&&w.types[0])||'', blind:w.blind||'', correct:w.correct||''}});
+  delWrong=(w)=>{ if(!window.confirm('刪除這題？（Notion 端會移到垃圾桶，可救回）\n\n'+w.q)) return;
+    this.setState(s=>({wrong:s.wrong.filter(x=>x.id!==w.id), wToast:'🗑 已刪除'}));
+    if(this.state.serverOn && String(w.id).includes('-')){ this.api('/api/wrong/'+w.id,'DELETE').catch(()=>{}); } };
+  onRec=(e)=>{ const id=e.target.dataset.id; if(!id) return; e.stopPropagation();
+    const tgt=this.state.chapters.find(c=>c.id===id); if(!tgt) return; const nv=!tgt.rec;
+    this.setState(s=>({chapters:s.chapters.map(c=>c.id===id?{...c,rec:nv}:c)}));
+    if(this.state.serverOn && String(id).includes('-')){ this.api('/api/chapters/'+id,'PATCH',{已錄影:nv}).catch(()=>{}); } };
+  exportWrong=()=>{ const hd={}; const k=this.appKey(); if(k) hd['X-App-Key']=k;
+    fetch('/api/wrong/export',{headers:hd}).then(r=>{ if(!r.ok) throw new Error('http '+r.status); return r.blob(); }).then(b=>{
+      const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='wrong-export-'+this.todayKey()+'.md'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      this.setState({wToast:'⬇ 已匯出 · 丟進 NotebookLM 當來源即可出題'});
+    }).catch(()=>this.setState({wToast:'匯出失敗，請確認伺服器連線'})); };
   startReview=(w)=>this.setState({review:w, reviewFlip:false});
   flipReview=()=>this.setState({reviewFlip:true});
   closeReview=()=>this.setState({review:null, reviewFlip:false});
@@ -1392,7 +1425,7 @@ class Component extends DCLogic {
     const overallPct=Math.round(chs.reduce((a,c)=>a+(W[c.status]||0),0)/chs.length*100);
     // groups
     const groups = ORDER.map(name=>{
-      const items=chs.filter(c=>c.subj===name).map(c=>({...c, stIcon:STICON[c.status]}));
+      const items=chs.filter(c=>c.subj===name).map(c=>({...c, stIcon:STICON[c.status], recCls:'ic'+(c.rec?' recon':'')}));
       return {name, color:SUBJ[name].color, total:items.length, done:items.filter(c=>c.status==='已熟').length, items};
     });
     // quests（由真實章節產生：未熟章節、弱科優先、波次在前）
@@ -1467,7 +1500,7 @@ class Component extends DCLogic {
       return {...w, causeColor:c.color, causeSoft:c.soft, causeHint:c.hint, subjColor:su.color, subjSoft:su.soft,
         stColor:statusColor[w.status]||'var(--mut)', dueLabel, dueNow:w.status!=='已攻克'&&w.due<=0,
         streakDots:[1,2,3].map(n=>({cls:'sdot'+(n<=w.streak?' on':'')})),
-        review:()=>this.startReview(w)};
+        review:()=>this.startReview(w), edit:(ev)=>{ if(ev&&ev.stopPropagation)ev.stopPropagation(); this.openEdit(w); }, del:(ev)=>{ if(ev&&ev.stopPropagation)ev.stopPropagation(); this.delWrong(w); }};
     };
     const wAll=wrong.map(decorate);
     const due=wAll.filter(w=>w.dueNow);
@@ -1577,6 +1610,8 @@ class Component extends DCLogic {
       openAdd:this.openAdd, closeAdd:this.closeAdd, addOpen:st.addOpen, addForm:st.addForm, saveWrong:this.saveWrong,
       onAddSubj:this.onAddField('subj'), onAddChapter:this.onAddField('chapter'), onAddQ:this.onAddField('q'),
       onAddSource:this.onAddField('source'), onAddCause:this.onAddField('cause'), onAddBlind:this.onAddField('blind'), onAddCorrect:this.onAddField('correct'),
+      onAddDiff:this.onAddField('diff'), onAddQtype:this.onAddField('qtype'), typeOpts:TYPE_OPTS, addTitle:(st.editId?'✎ 編輯錯題':'＋ 快速新增錯題'), exportWrong:this.exportWrong,
+      onRec:this.onRec,
       reviewOpen:!!st.review, rv, reviewFlip:st.reviewFlip, notFlip:!st.reviewFlip, flipReview:this.flipReview, closeReview:this.closeReview,
       gradeRight:()=>this.gradeReview(true), gradeWrong:()=>this.gradeReview(false),
       wToast:st.wToast, hasToast:!!st.wToast,

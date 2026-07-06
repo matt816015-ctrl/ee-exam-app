@@ -315,6 +315,88 @@ app.patch("/api/formulas/:id", async (req, res) => {
   }
 });
 
+// ---- 科目筆記本（NotebookLM 連結，存 Notion「科目筆記本」資料庫）----
+function mapNotebook(page) {
+  const p = page.properties;
+  return { id: page.id, 科目: txt(p["科目"]?.title), 連結: urlv(p["連結"]) };
+}
+async function notebooksDb() { return process.env.NOTION_DB_NOTEBOOKS || (await resolveDb("科目筆記本")); }
+
+app.get("/api/notebooks", async (req, res) => {
+  try {
+    const rows = await cached("notebooks", async () => queryAll(await notebooksDb(), mapNotebook));
+    res.json(rows);
+  } catch (e) { res.status(e.status || 500).json({ error: e.message }); }
+});
+
+app.patch("/api/notebooks/:id", async (req, res) => {
+  try {
+    const props = {};
+    if (typeof req.body.連結 === "string") props["連結"] = { url: req.body.連結 || null };
+    const data = await notion(`/pages/${req.params.id}`, "PATCH", { properties: props });
+    bust("notebooks");
+    res.json(mapNotebook(data));
+  } catch (e) { res.status(e.status || 500).json({ error: e.message }); }
+});
+
+// ---- 錯題：編輯內容 ----
+app.patch("/api/wrong/:id", async (req, res) => {
+  try {
+    const b = req.body || {};
+    const rt = (s) => ({ rich_text: [{ text: { content: String(s) } }] });
+    const props = {};
+    if (typeof b.題目摘要 === "string") props["題目摘要"] = { title: [{ text: { content: b.題目摘要 || "未命名" } }] };
+    if (typeof b.科目 === "string" && b.科目) props["科目"] = { select: { name: b.科目 } };
+    if (typeof b.章節 === "string") props["章節"] = rt(b.章節);
+    if (typeof b.卡點原因 === "string" && b.卡點原因) props["卡點原因"] = { select: { name: b.卡點原因 } };
+    if (typeof b.難度 === "string" && b.難度) props["難度"] = { select: { name: b.難度 } };
+    if (Array.isArray(b.題型)) props["題型"] = { multi_select: b.題型.map((n) => ({ name: n })) };
+    if (typeof b.盲點 === "string") props["盲點"] = rt(b.盲點);
+    if (typeof b.正解重點 === "string") props["正解重點"] = rt(b.正解重點);
+    if (typeof b.來源 === "string") props["來源"] = rt(b.來源);
+    const data = await notion(`/pages/${req.params.id}`, "PATCH", { properties: props });
+    bust("wrong");
+    res.json(mapWrong(data));
+  } catch (e) { res.status(e.status || 500).json({ error: e.message }); }
+});
+
+// ---- 錯題：刪除（Notion 封存，可從垃圾桶救回）----
+app.delete("/api/wrong/:id", async (req, res) => {
+  try {
+    await notion(`/pages/${req.params.id}`, "PATCH", { archived: true });
+    bust("wrong");
+    res.json({ ok: true });
+  } catch (e) { res.status(e.status || 500).json({ error: e.message }); }
+});
+
+// ---- 錯題匯出（給 NotebookLM 當來源；?due=1 只匯出到期題）----
+app.get("/api/wrong/export", async (req, res) => {
+  try {
+    let rows = await cached("wrong", () => queryAll(DB_WRONG, mapWrong));
+    const today = new Date().toISOString().slice(0, 10);
+    if (req.query.due === "1") rows = rows.filter((w) => !w.已攻克 && w.下次複習日 && w.下次複習日 <= today);
+    const subjects = ["工程數學", "電路學", "電子學", "電機機械", "電力系統", "工業配電"];
+    let md = `# 電機技師錯題總表\n\n匯出日期：${today}｜共 ${rows.length} 題\n\n`;
+    for (const s of subjects) {
+      const list = rows.filter((w) => w.科目 === s);
+      if (!list.length) continue;
+      md += `## ${s}（${list.length} 題）\n\n`;
+      for (const w of list) {
+        md += `### ${w.題目摘要 || "未命名"}\n`;
+        md += `- 章節：${w.章節 || "-"}｜難度：${w.難度 || "-"}｜題型：${(w.題型 || []).join("、") || "-"}\n`;
+        md += `- 卡點原因：${w.卡點原因 || "-"}｜複習次數：${w.複習次數}｜狀態：${w.已攻克 ? "已攻克" : "複習中"}\n`;
+        if (w.盲點) md += `- 盲點：${w.盲點}\n`;
+        if (w.正解重點) md += `- 正解重點：${w.正解重點}\n`;
+        if (w.來源) md += `- 來源：${w.來源}\n`;
+        md += `\n`;
+      }
+    }
+    res.setHeader("Content-Type", "text/markdown; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="wrong-export-${today}.md"`);
+    res.send(md);
+  } catch (e) { res.status(e.status || 500).json({ error: e.message }); }
+});
+
 // ---- 每日戰績（專注分鐘 / 達標 / 每日完成）----
 function mapDaily(page) {
   const p = page.properties;
