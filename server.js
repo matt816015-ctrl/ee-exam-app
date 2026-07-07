@@ -15,7 +15,7 @@ app.use(express.static(path.join(__dirname, "public"), { maxAge: "7d", index: ["
 const APP_KEY = process.env.APP_KEY || "";
 app.use("/api", (req, res, next) => {
   if (!APP_KEY) return next();                    // 未設定則不啟用（相容舊部署）
-  if (req.path === "/health") return next();      // 健康檢查免驗
+  if (req.path === "/health" || req.path === "/config") return next(); // 健康檢查與公開前端設定免驗
   const key = req.get("X-App-Key") || req.query.key;
   if (key === APP_KEY) return next();
   res.status(401).json({ error: "unauthorized" });
@@ -28,6 +28,7 @@ const DB_WRONG     = process.env.NOTION_DB_WRONG    || "138e5f939f79405d9b072fc6
 // 影片 / 公式資料庫：可不設，程式會依資料庫名稱自動尋找
 const DB_VIDEOS_ENV   = process.env.NOTION_DB_VIDEOS   || "";
 const DB_FORMULAS_ENV = process.env.NOTION_DB_FORMULAS || "";
+const NOTION_HOME_URL = process.env.NOTION_HOME_URL || "";
 const NOTION_VER   = "2022-06-28";
 const API = "https://api.notion.com/v1";
 
@@ -180,6 +181,11 @@ app.get("/api/health", (req, res) => {
   res.json({ ok: true, tokenSet: !!NOTION_TOKEN });
 });
 
+// 前端公開設定：不含任何密鑰
+app.get("/api/config", (req, res) => {
+  res.json({ notionHomeUrl: NOTION_HOME_URL });
+});
+
 // 讀全部章節
 app.get("/api/chapters", async (req, res) => {
   try {
@@ -272,6 +278,31 @@ app.get("/api/videos", async (req, res) => {
   try {
     const rows = await cached("videos", async () => queryAll(await videosDb(), mapVideo));
     res.json(rows);
+  } catch (e) {
+    res.status(e.status || 500).json({ error: e.message });
+  }
+});
+
+
+// 新增影片列：章節尚未有對應影片時，由前端「＋連結影片」建立 Notion 課程影片資料
+app.post("/api/videos", async (req, res) => {
+  try {
+    const b = req.body || {};
+    const dbId = await videosDb();
+    const rt = (s) => ({ rich_text: [{ text: { content: String(s || "") } }] });
+    const props = {
+      "標題": { title: [{ text: { content: b.標題 || b.title || b.章節 || b.chapter || "未命名影片" } }] },
+    };
+    if (b.科目 || b.subj) props["科目"] = { select: { name: b.科目 || b.subj } };
+    if (b.章節 || b.chapter) props["章節"] = rt(b.章節 || b.chapter);
+    if (b.講師 || b.teacher) props["講師"] = rt(b.講師 || b.teacher);
+    if (b.標籤 || b.tag) props["標籤"] = { select: { name: b.標籤 || b.tag } };
+    if (typeof b.影片連結 === "string" || typeof b.url === "string") props["影片連結"] = { url: b.影片連結 || b.url || null };
+    if (typeof b.時長分 === "number" || typeof b.min === "number") props["時長分"] = { number: Number(b.時長分 ?? b.min) || 0 };
+    props["進度"] = { number: typeof b.進度 === "number" ? b.進度 : (typeof b.prog === "number" ? b.prog : 0) };
+    const data = await notion(`/pages`, "POST", { parent: { database_id: dbId }, properties: props });
+    bust("videos");
+    res.json(mapVideo(data));
   } catch (e) {
     res.status(e.status || 500).json({ error: e.message });
   }

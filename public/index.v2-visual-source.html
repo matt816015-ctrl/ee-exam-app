@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0}
+a{color:#5b7689}a:hover{color:#2f3a43}
+.app{--bg:#e7ecef;--bg2:#eef2f4;--surf:#ffffff;--surf2:#f4f7f9;--line:#dde4e9;--ink:#2f3a43;--ink2:#5d6b76;--mut:#93a0aa;--pri:#6f8fac;--pri2:#5b7689;--prisoft:#e2eaf0;--acc:#9bb1a4;--acc2:#c9aa8c;--good:#86a98c;--warn:#d2a96b;--bad:#c98b86;--gold:#c6a865;--rc:var(--pri);font-family:'Noto Sans TC',system-ui,sans-serif;color:var(--ink);background:var(--bg);height:100vh;overflow:hidden;display:flex;font-size:14px;line-height:1.5}
+.disp{font-family:'Space Grotesk','Noto Sans TC',sans-serif}
+.side{width:236px;flex:0 0 236px;background:var(--surf);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:20px 14px;gap:6px;height:100vh}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 8px 16px}
+.logo{width:34px;height:34px;border-radius:9px;background:var(--pri);display:grid;place-items:center;color:#fff;font-weight:700;flex:0 0 auto;box-shadow:0 4px 12px -4px var(--pri)}
+.brand b{font-size:14px;display:block;letter-spacing:.02em}
+.brand span{font-size:10.5px;color:var(--mut);letter-spacing:.18em;font-family:'Space Grotesk'}
+.nsec{font-size:10px;letter-spacing:.18em;color:var(--mut);padding:14px 10px 6px;font-family:'Space Grotesk';text-transform:uppercase}
+.nav{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:10px;color:var(--ink2);cursor:pointer;font-size:13.5px;font-weight:500;border:1px solid transparent;transition:.15s;background:none;width:100%;text-align:left;font-family:'Noto Sans TC'}
+.nav:hover{background:var(--surf2);color:var(--ink)}
+.nav.on{background:var(--prisoft);color:var(--pri2);border-color:var(--line);font-weight:700}
+.nav .i{width:18px;text-align:center;font-size:15px;flex:0 0 auto}
+.nbadge{margin-left:auto;font-size:10px;color:var(--bad)}
+.nbadge.mut{color:var(--mut)}
+.lvlcard{margin-top:auto;background:var(--surf2);border:1px solid var(--line);border-radius:13px;padding:13px}
+.lvltop{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.avatar{width:46px;height:46px;flex:0 0 auto;display:grid;place-items:center;background:radial-gradient(circle at 50% 58%,var(--prisoft),transparent 70%);border-radius:12px}
+.avatar img{width:42px;height:42px;object-fit:contain}
+.jobttl{font-size:10px;color:var(--ink2);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.flame{font-size:12px;color:var(--acc2);font-weight:700;display:flex;align-items:center;gap:3px}
+.xpbar{height:8px;border-radius:6px;background:var(--line);overflow:hidden}
+.xpfill{height:100%;background:linear-gradient(90deg,var(--pri),var(--acc));border-radius:6px}
+.xpmeta{font-size:10.5px;color:var(--mut);margin-top:6px;display:flex;justify-content:space-between;font-family:'Space Grotesk'}
+.main{flex:1;min-width:0;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--bg2),var(--bg));position:relative;z-index:0}
+.siteart{position:fixed;left:236px;top:0;right:0;bottom:0;z-index:0;pointer-events:none;background-image:url(assets/bg/site-wide.webp);background-size:118% auto;background-position:center 46%;background-repeat:no-repeat;opacity:.35}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 30px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--surf) 70%,transparent);backdrop-filter:blur(6px);position:sticky;top:0;z-index:20}
+.ptitle b{font-size:17px}
+.ptitle span{font-size:11.5px;color:var(--mut);display:block;font-family:'Space Grotesk';letter-spacing:.08em}
+.tright{display:flex;align-items:center;gap:12px}
+.syncpill{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--ink2);background:var(--surf);border:1px solid var(--line);border-radius:20px;padding:6px 12px;font-weight:600}
+.syncdot{width:8px;height:8px;border-radius:50%;background:var(--good)}
+.syncpill u{text-decoration:none;color:var(--mut);font-family:'Space Grotesk';font-size:10.5px;font-weight:500}
+.notionlink{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--ink2);background:var(--surf);border:1px solid var(--line);border-radius:20px;padding:6px 12px;cursor:pointer;transition:.15s}
+.notionlink:hover{border-color:var(--pri);color:var(--pri2)}
+.cdbadge{display:flex;flex-direction:column;align-items:flex-end;line-height:1.1}
+.cdbadge b{font-family:'Space Grotesk';font-size:15px;color:var(--bad)}
+.cdbadge span{font-size:10px;color:var(--mut);letter-spacing:.1em}
+.btn{font-size:13px;font-weight:600;border-radius:10px;padding:9px 15px;border:1px solid var(--line);background:var(--surf);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:.15s;font-family:'Noto Sans TC'}
+.btn:hover{border-color:var(--pri)}
+.btn.pri{background:var(--pri);color:#fff;border-color:var(--pri);box-shadow:0 6px 16px -6px var(--pri)}
+.btn.pri:hover{background:var(--pri2)}
+.btn.ghost{background:none}
+.btn.sm{padding:6px 11px;font-size:12px}
+.scroll{flex:1;overflow-y:auto;padding:26px 30px 60px;position:relative;z-index:1}
+.screen{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.hero{position:relative;overflow:hidden;border-radius:18px;border:1px solid var(--line);background:linear-gradient(135deg,color-mix(in srgb,var(--prisoft) 74%,transparent),color-mix(in srgb,var(--surf) 42%,transparent));padding:26px 28px;display:grid;grid-template-columns:1fr 210px;gap:24px}
+.hwm2{position:absolute;right:-30px;bottom:-40px;width:260px;height:260px;border-radius:50%;border:30px solid var(--pri);opacity:.05;pointer-events:none}
+.hi{position:relative;z-index:1}
+.herotop{display:flex;align-items:center;gap:11px;margin-bottom:9px;flex-wrap:wrap}
+.greet{font-size:12px;color:var(--pri2);font-weight:700;letter-spacing:.05em;font-family:'Space Grotesk'}
+.missiontag{font-size:10px;letter-spacing:.16em;font-family:'Space Grotesk';font-weight:700;color:var(--pri2);background:var(--surf);border:1px solid var(--line);border-radius:20px;padding:3px 11px}
+.hero h2{font-size:27px;margin:0 0 4px;font-weight:900;line-height:1.25}
+.quotecard{position:relative;margin-top:16px;max-width:540px;padding:14px 18px 14px 20px;background:color-mix(in srgb,var(--surf) 62%,transparent);border:1px solid var(--line);border-left:3px solid var(--acc);border-radius:13px}
+.qmark{position:absolute;left:9px;top:-12px;font-size:46px;color:var(--acc);opacity:.32;font-family:'Space Grotesk';line-height:1}
+.quote{font-size:15px;color:var(--ink);line-height:1.7;font-weight:600}
+.qsub{font-size:12px;color:var(--mut);margin-top:9px;display:flex;align-items:center;gap:10px}
+.qref{background:var(--surf);border:1px solid var(--line);border-radius:20px;padding:4px 11px;font-size:11px;color:var(--ink2);cursor:pointer;font-family:'Noto Sans TC'}
+.qref:hover{border-color:var(--pri);color:var(--pri2)}
+.yday{display:flex;gap:34px;margin-top:22px}
+.ydi b{font-family:'Space Grotesk';font-size:38px;font-weight:700;display:block;line-height:1.05;white-space:nowrap}
+.ydlbl{font-size:12.5px;color:var(--ink2);display:block;margin-top:3px}
+.up{color:var(--good);font-size:12px;font-weight:700}
+.herobuddy{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px}
+.emblem{position:relative;z-index:1;width:158px;height:158px}
+.bring{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from -90deg,var(--acc) calc(var(--p)*1%),var(--line) 0)}
+.bringin{position:absolute;inset:9px;border-radius:50%;background:var(--surf);box-shadow:inset 0 2px 8px rgba(40,60,80,.08)}
+.buddyslime{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;animation:bob 3.2s ease-in-out infinite;filter:drop-shadow(0 6px 8px rgba(40,60,80,.18))}
+.buddyslime img{width:96px;height:96px;object-fit:contain}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.emblembadge{position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);background:var(--acc);color:#fff;font-size:13px;font-weight:700;padding:2px 13px;border-radius:20px;border:2px solid var(--surf);white-space:nowrap}
+.buddyname{font-size:12px;color:var(--pri2);font-weight:700;text-align:center;margin-top:5px}
+.glabel{font-size:11.5px;color:var(--mut);font-weight:600;text-align:center}
+.cardrow{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.scard{background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:15px 16px}
+.scard .l{font-size:11px;color:var(--mut);letter-spacing:.04em;display:flex;align-items:center;gap:6px}
+.scard .v{font-family:'Space Grotesk';font-size:25px;font-weight:700;margin-top:7px}
+.scard .v u{font-size:16px;font-weight:600;color:var(--mut);text-decoration:none;margin-left:3px}
+.scard .s{font-size:11px;color:var(--ink2);margin-top:3px}
+.sec{display:flex;flex-direction:column;gap:13px}
+.sechd{display:flex;align-items:center;justify-content:space-between}
+.sechd h3{font-size:16px;margin:0;display:flex;align-items:center;gap:9px}
+.sechd .badge{font-size:11px;color:var(--mut);font-family:'Space Grotesk';font-weight:500}
+.qgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.qcard{background:var(--surf);border:1px solid var(--line);border-radius:15px;overflow:hidden;display:flex;flex-direction:column;transition:.18s;position:relative}
+.qcard:hover{box-shadow:0 12px 30px -16px rgba(0,0,0,.3);transform:translateY(-2px)}
+.qvid{height:96px;background:linear-gradient(135deg,#2f3a43,#52616c);display:flex;align-items:center;justify-content:center;position:relative;border-bottom:1px solid var(--line)}
+.qvid .play{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.92);display:grid;place-items:center;color:#2f3a43;font-size:13px;padding-left:2px}
+.qvid .vt{position:absolute;left:9px;top:9px;font-size:9.5px;font-family:'Space Grotesk';letter-spacing:.1em;color:#fff;background:rgba(0,0,0,.35);padding:2px 7px;border-radius:5px}
+.qvid .vd{position:absolute;right:8px;bottom:8px;font-size:10px;font-family:'Space Grotesk';color:#fff;background:rgba(28,36,43,.72);padding:1px 6px;border-radius:5px}
+.qvid.nolink{background:repeating-linear-gradient(45deg,var(--surf2) 0 10px,var(--bg2) 10px 20px)}
+.qvid.nolink .nl{font-size:11px;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+.qvid.nolink .nl b{font-size:11.5px;color:var(--ink2)}
+.vbarwrap{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(28,36,43,.25)}
+.vbar{height:100%;background:var(--acc)}
+.qstage{position:absolute;right:9px;top:9px;width:26px;height:26px;border-radius:8px;background:var(--surf);border:1px solid var(--line);display:grid;place-items:center;font-family:'Space Grotesk';font-weight:700;font-size:12px;color:var(--pri2);z-index:1}
+.qbody{padding:13px 14px;display:flex;flex-direction:column;gap:8px;flex:1}
+.pill{font-size:10.5px;padding:2px 9px;border-radius:20px;font-weight:600;display:inline-flex;align-items:center;gap:4px;width:fit-content}
+.qname{font-size:14.5px;font-weight:700;line-height:1.4}
+.qnote{font-size:11.5px;color:var(--ink2);background:var(--surf2);border:1px solid var(--line);border-radius:8px;padding:7px 9px;line-height:1.5}
+.qfoot{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:4px}
+.xp{font-size:11px;font-weight:700;color:var(--gold);font-family:'Space Grotesk'}
+.focusband{background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:18px 20px;display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center}
+.fb-l{display:flex;flex-direction:column;gap:12px}
+.fb-stats{display:flex;gap:24px;flex-wrap:wrap}
+.fbi b{font-family:'Space Grotesk';font-size:20px;display:block}
+.fbi span{font-size:11px;color:var(--mut)}
+.subjchips{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.subjchips .lb{font-size:11px;color:var(--mut);margin-right:2px}
+.schip{font-size:11.5px;font-weight:600;border:1px solid var(--line);background:var(--surf2);color:var(--ink2);border-radius:20px;padding:4px 12px;cursor:pointer;font-family:'Noto Sans TC'}
+.schip.on{background:var(--pri);border-color:var(--pri);color:#fff}
+.hbars{display:flex;flex-direction:column;gap:6px;min-width:230px}
+.hbar{display:grid;grid-template-columns:62px 1fr 34px;align-items:center;gap:8px;font-size:11px}
+.hbar .t{color:var(--ink2)}
+.hbar .tr{height:7px;border-radius:5px;background:var(--line);overflow:hidden}
+.hbar .tr i{display:block;height:100%;border-radius:5px}
+.hbar .n{font-family:'Space Grotesk';color:var(--mut);text-align:right}
+.fb-r{display:flex;flex-direction:column;gap:9px;align-items:stretch;min-width:170px}
+.squad{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.slimecard{background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:13px 14px;display:flex;gap:11px;align-items:center;cursor:pointer;transition:.16s;position:relative}
+.slimecard:hover{transform:translateY(-3px);box-shadow:0 14px 30px -16px rgba(0,0,0,.3);border-color:var(--pri)}
+.slimecard.weak{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 5%,var(--surf))}
+.slimewrap{width:72px;height:72px;flex:0 0 auto;display:grid;place-items:center;background:radial-gradient(circle at 50% 62%,var(--surf2),transparent 68%)}
+.slimewrap img{width:72px;height:72px;object-fit:contain;filter:drop-shadow(0 6px 7px rgba(40,60,80,.2))}
+.rankbadge{position:absolute;left:62px;top:11px;background:var(--pri);color:#fff;font-size:9.5px;padding:1px 7px;border-radius:20px;font-weight:700;box-shadow:0 3px 8px -3px var(--pri)}
+.sinfo{min-width:0;flex:1}
+.sinfo b{font-size:13px;display:block;line-height:1.3}
+.sunit{font-size:10px;color:var(--mut);font-family:'Space Grotesk'}
+.stars{display:flex;gap:2px;margin:5px 0 5px}
+.star{font-size:11px;color:var(--line)}
+.star.on{color:var(--gold)}
+.sbar{height:6px;border-radius:5px;background:var(--line);overflow:hidden}
+.sbar i{display:block;height:100%;border-radius:5px}
+.snext{font-size:10px;color:var(--ink2);margin-top:5px;display:block}
+.loopcard{background:var(--surf);border:1px dashed var(--acc);border-radius:16px;padding:18px 20px}
+.loophd{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.loophd .ico{font-size:22px}
+.loophd b{font-size:14.5px}
+.loophd span{font-size:12px;color:var(--ink2);display:block}
+.loopsteps{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.lstep{background:var(--surf2);border:1px solid var(--line);border-radius:12px;padding:12px 13px;position:relative}
+.lstep .n{width:20px;height:20px;border-radius:50%;background:var(--pri);color:#fff;font-size:10.5px;font-family:'Space Grotesk';font-weight:700;display:grid;place-items:center;margin-bottom:7px}
+.lstep b{font-size:12.5px;display:block;line-height:1.4}
+.lstep span{font-size:11px;color:var(--ink2);display:block;margin-top:3px;line-height:1.5}
+.lstep .act{margin-top:9px}
+.looparrow{position:absolute;right:-12px;top:50%;transform:translateY(-50%);color:var(--acc);font-size:13px;z-index:2}
+.loopfoot{font-size:11px;color:var(--mut);margin-top:12px;line-height:1.6}
+.vcontinue{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.vcont{display:flex;gap:13px;background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:11px;cursor:pointer;transition:.15s}
+.vcont:hover{border-color:var(--pri);box-shadow:0 10px 24px -16px rgba(0,0,0,.3)}
+.vthumb{position:relative;flex:0 0 auto;width:130px;height:74px;border-radius:10px;background:linear-gradient(135deg,#2f3a43,#52616c);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.vplay{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.92);color:#2f3a43;display:grid;place-items:center;font-size:12px;padding-left:2px}
+.vdur{position:absolute;right:7px;bottom:7px;font-size:10px;font-family:'Space Grotesk';color:#fff;background:rgba(28,36,43,.72);padding:1px 6px;border-radius:5px}
+.vcmeta{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;justify-content:center}
+.fsubj{font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:20px;width:fit-content}
+.vtitle{font-size:13.5px;font-weight:700;line-height:1.35}
+.vsub{font-size:11px;color:var(--mut)}
+.alert{background:color-mix(in srgb,var(--warn) 12%,var(--surf));border:1px solid color-mix(in srgb,var(--warn) 40%,var(--line));border-radius:13px;padding:14px 17px;display:flex;align-items:center;gap:13px}
+.alert .ai{font-size:20px}
+.alert b{font-size:13.5px}.alert p{margin:3px 0 0;font-size:12.5px;color:var(--ink2)}
+.subjwall{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.subjcard{background:var(--surf);border:1px solid var(--line);border-radius:15px;padding:16px 20px 16px 16px;display:flex;gap:15px;align-items:center;cursor:pointer;transition:.15s;position:relative}
+.subjcard:hover{border-color:var(--pri);box-shadow:0 10px 24px -16px rgba(0,0,0,.3)}
+.subjcard.weak{border-color:var(--bad)}
+.subjslime{position:relative;flex:0 0 auto;width:88px;height:88px}
+.ring{--p:0;width:88px;height:88px;border-radius:50%;background:conic-gradient(var(--rc) calc(var(--p)*1%),var(--line) 0);display:grid;place-items:center;flex:0 0 auto}
+.ring i{width:calc(100% - 18px);height:calc(100% - 18px);background:var(--surf);border-radius:50%;display:grid;place-items:center;font-style:normal;overflow:visible}
+.ring i img{width:62px;height:62px;object-fit:contain}
+.pctbadge{position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);background:var(--surf);border:1px solid var(--line);border-radius:20px;padding:1px 9px;font-size:11px;font-weight:700;box-shadow:0 2px 6px rgba(40,60,80,.14);white-space:nowrap}
+.scinfo b{font-size:14.5px;display:flex;align-items:center;gap:7px}
+.scinfo .m{font-size:11.5px;color:var(--ink2);margin-top:5px}
+.scinfo .e{font-size:11px;color:var(--mut);margin-top:3px;font-family:'Space Grotesk'}
+.jobline{font-size:10.5px;color:var(--pri2);font-weight:600;margin-top:3px}
+.weaktag{font-size:9.5px;background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad);padding:2px 7px;border-radius:20px;font-weight:700}
+.dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+.tl{background:var(--surf);border:1px solid var(--line);border-radius:15px;padding:24px 20px 18px}
+.tltrack{position:relative;height:34px;display:flex;border-radius:9px;overflow:hidden;border:1px solid var(--line)}
+.tlseg{position:relative;display:flex;align-items:center;justify-content:center}
+.tlseg .fill{position:absolute;left:0;top:0;bottom:0}
+.tlseg .tn{position:relative;z-index:1;font-size:11px;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(40,60,80,.25);white-space:nowrap}
+.tltoday{position:absolute;top:-7px;bottom:-7px;width:2px;background:var(--bad);z-index:3}
+.tltoday span{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:#fff;background:var(--bad);padding:1px 7px;border-radius:10px;white-space:nowrap;font-weight:700}
+.tldates{position:relative;height:16px;font-size:10px;color:var(--mut);font-family:'Space Grotesk';margin-top:7px}
+.tldates span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.tldates span:first-child{transform:none}
+.tldates span:last-child{transform:translateX(-100%)}
+.wavegrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
+.wavebox{border:1px solid var(--line);border-radius:12px;padding:11px 13px;background:var(--surf2);position:relative}
+.wavebox.done{opacity:.75}
+.wavebox.cur{border-color:var(--pri);background:var(--prisoft);box-shadow:0 8px 20px -12px var(--pri)}
+.wavebox .wk{font-size:9.5px;letter-spacing:.12em;font-family:'Space Grotesk';color:var(--mut);font-weight:700;display:flex;align-items:center;gap:6px}
+.wavebox .wk .dot{width:8px;height:8px}
+.wavebox b{font-size:13px;display:block;margin-top:3px}
+.wavebox .wr{font-size:10px;color:var(--mut);font-family:'Space Grotesk';display:block;margin-top:1px}
+.wavebox .wm{font-size:11px;color:var(--ink2);margin-top:8px;line-height:1.6}
+.wavebox .wm em{font-style:normal;font-weight:700;color:var(--ink)}
+.curtag{position:absolute;right:9px;top:9px;font-size:9px;background:var(--pri);color:#fff;border-radius:20px;padding:1px 7px;font-weight:700;letter-spacing:.06em}
+.donetag{position:absolute;right:9px;top:9px;font-size:9px;background:var(--good);color:#fff;border-radius:20px;padding:1px 7px;font-weight:700}
+.chgroup{background:var(--surf);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.chhd{display:flex;align-items:center;gap:10px;padding:13px 16px;cursor:pointer;background:var(--surf2)}
+.chhd b{font-size:14px}.chhd .c{font-size:11px;color:var(--mut);font-family:'Space Grotesk';margin-left:auto}
+.chrow{display:grid;grid-template-columns:32px minmax(0,1fr) 84px 52px 24px 24px 104px;align-items:center;gap:12px;padding:11px 16px;border-top:1px solid var(--line)}
+.chrow.done .nm{color:var(--mut);text-decoration:line-through;text-decoration-color:var(--line)}
+.chrow.cur{background:color-mix(in srgb,var(--prisoft) 45%,transparent)}
+.chnd{position:relative;width:32px;height:24px;display:flex;align-items:center;justify-content:center;justify-self:center}
+.chnd .ln{position:absolute;left:50%;transform:translateX(-50%);width:2px;background:var(--line);top:-24px;bottom:-24px}
+.chnd .ln.dn{top:50%}
+.chnd .ln.up{bottom:50%}
+.chnd .pdot{position:relative;z-index:1}
+.pdot.pds{width:24px;height:24px;font-size:10px}
+.chcols{display:grid;grid-template-columns:32px minmax(0,1fr) 84px 52px 24px 24px 104px;gap:12px;padding:0 17px;font-size:10px;color:var(--mut);letter-spacing:.08em;font-family:'Space Grotesk';margin-bottom:-4px}
+.f1{flex:1}
+.subhd{font-size:13.5px;margin:0;display:flex;align-items:center;gap:8px;font-weight:700}
+.subhd .badge{font-size:11px;color:var(--mut);font-family:'Space Grotesk';font-weight:500}
+.ccgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.ccvid{height:78px}
+.cctop{display:flex;align-items:center;gap:7px}
+.cctop .nopen{margin-left:auto}
+.ccname{font-size:13.5px;font-weight:700;line-height:1.4}
+.ccfoot{display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:2px}
+.pathwrap{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;align-items:start}
+.pathcard{background:var(--surf);border:1px solid var(--line);border-radius:15px;padding:16px}
+.pathhd{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.pathhd img{width:40px;height:40px;object-fit:contain;margin-left:auto}
+.pnode{display:flex;gap:11px;position:relative;padding-bottom:16px}
+.pnode:last-child{padding-bottom:0}
+.pline{position:absolute;left:13px;top:30px;bottom:0;width:2px;background:var(--line)}
+.pdot{width:28px;height:28px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;font-size:11px;font-family:'Space Grotesk';font-weight:700;border:2px solid var(--line);background:var(--surf2);color:var(--mut);z-index:1}
+.pdot.done{background:var(--good);border-color:var(--good);color:#fff}
+.pdot.cur{background:var(--pri);border-color:var(--pri);color:#fff;box-shadow:0 0 0 4px var(--prisoft)}
+.pmain{flex:1;min-width:0}
+.pname{font-size:13px;font-weight:600;line-height:1.35}
+.pname.done{color:var(--mut);text-decoration:line-through;text-decoration-color:var(--line)}
+.pmeta{display:flex;align-items:center;gap:9px;margin-top:4px;font-size:10.5px;color:var(--mut);flex-wrap:wrap}
+.pv{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:600;color:var(--pri2);background:var(--prisoft);border:none;border-radius:20px;padding:2px 9px;cursor:pointer;font-family:'Noto Sans TC'}
+.pv.off{color:var(--mut);background:none;border:1px dashed var(--line)}
+.pstat{font-size:10.5px;font-weight:700}
+.chrow .st{width:24px;height:24px;border-radius:7px;background:var(--surf2);border:1px solid var(--line);display:grid;place-items:center;font-size:11px;font-family:'Space Grotesk';color:var(--mut);flex:0 0 auto}
+.chrow .nm{font-size:13.5px;flex:1;min-width:0}
+.chrow .wp{font-size:10px;padding:2px 8px;border-radius:20px;color:var(--mut);border:1px solid var(--line);white-space:nowrap}
+.chvid{display:flex;align-items:center;gap:7px;width:78px;flex:0 0 auto;background:none;border:none;cursor:pointer;padding:0;font-family:'Noto Sans TC';text-align:left}
+.cvp{width:26px;height:26px;border-radius:50%;background:var(--pri);color:#fff;display:grid;place-items:center;font-size:10px;padding-left:2px;flex:0 0 auto;box-shadow:0 3px 8px -3px var(--pri);transition:.15s}
+.chvid:hover .cvp{background:var(--pri2)}
+.cvt{font-size:11px;color:var(--ink2);font-family:'Space Grotesk';white-space:nowrap}
+.chvid.off .cvp{background:none;border:1.5px dashed var(--mut);color:var(--mut);box-shadow:none;padding-left:0;width:23px;height:23px}
+.chvid.off .cvt{color:var(--mut);font-family:'Noto Sans TC';font-size:10.5px}
+.chvid.off:hover .cvp{border-color:var(--pri);color:var(--pri2)}
+.chrow .ic{color:var(--mut);font-size:13px;cursor:pointer;opacity:.45}
+.chrow .ic.recon{opacity:1;color:var(--good)}
+.nopen{font-size:12px;color:var(--mut);cursor:pointer;text-decoration:none}
+.nopen:hover{color:var(--pri2)}
+.sel{font-size:12px;font-family:'Noto Sans TC';border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--surf);color:var(--ink);cursor:pointer}
+.wtop{display:grid;grid-template-columns:1fr 300px;gap:16px}
+.winsight{background:var(--surf);border:1px solid var(--line);border-radius:15px;padding:16px 18px}
+.wi-h{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}
+.wi-h b{font-size:15px}.wi-h span{font-size:11.5px;color:var(--mut)}
+.wi-lead{font-size:12.5px;color:var(--ink2);background:var(--surf2);border-radius:10px;padding:9px 12px;margin-bottom:12px}
+.causebars{display:flex;flex-direction:column;gap:7px}
+.cbar{display:grid;grid-template-columns:84px 1fr 26px;align-items:center;gap:9px;font-size:11.5px}
+.cbar .ct{color:var(--ink2)}
+.cbar .ctr{height:9px;border-radius:6px;background:var(--line);overflow:hidden}
+.cbar .ctr i{display:block;height:100%;border-radius:6px}
+.cbar .cn{font-family:'Space Grotesk';color:var(--mut);text-align:right}
+.wi-foot{font-size:11.5px;color:var(--ink2);margin-top:12px;padding-top:11px;border-top:1px solid var(--line)}
+.wstatcol{display:flex;flex-direction:column;gap:12px}
+.wstatgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.wstat{background:var(--surf);border:1px solid var(--line);border-radius:13px;padding:12px 14px}
+.wsv{font-size:24px;font-weight:700}
+.wsl{font-size:11px;color:var(--mut);margin-top:2px}
+.masterbar{background:var(--surf);border:1px solid var(--line);border-radius:13px;padding:12px 14px}
+.mbl{display:flex;align-items:baseline;justify-content:space-between;font-size:12px;color:var(--ink2);margin-bottom:7px}
+.mbl b{font-size:16px}
+.mbtrack{height:8px;border-radius:6px;background:var(--line);overflow:hidden}
+.mbtrack i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--good),var(--acc))}
+.duegrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.duecard{background:var(--surf);border:1px solid var(--warn);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.dc-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.cpill{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;white-space:nowrap}
+.dq{font-size:13.5px;font-weight:600;line-height:1.45}
+.dc-meta{font-size:11px;color:var(--mut)}
+.dc-foot{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:4px}
+.streak{display:flex;align-items:center;gap:4px;font-size:10.5px;color:var(--mut)}
+.sdot{width:9px;height:9px;border-radius:50%;background:var(--line);display:inline-block}
+.sdot.on{background:var(--good)}
+.schtimeline{display:grid;grid-template-columns:repeat(14,1fr);gap:6px;background:var(--surf);border:1px solid var(--line);border-radius:15px;padding:18px 16px 14px}
+.schday{display:flex;flex-direction:column;align-items:center;gap:4px;border-radius:9px;padding:6px 2px 5px}
+.schday.today{background:var(--prisoft)}
+.schbarwrap{height:96px;width:60%;max-width:30px;display:flex;flex-direction:column-reverse;border-radius:6px 6px 0 0;overflow:hidden}
+.schseg{width:100%}
+.schdot{width:6px;height:6px;border-radius:50%;background:var(--line);align-self:center}
+.schcnt{font-family:'Space Grotesk';font-size:13px;font-weight:700;color:var(--ink)}
+.schcnt.zero{color:var(--mut);font-weight:500}
+.schlbl{font-size:10px;color:var(--ink2);font-family:'Space Grotesk'}
+.schwd{font-size:9.5px;color:var(--mut)}
+.schday.today .schwd,.schday.today .schlbl{color:var(--pri2);font-weight:700}
+.schday.wkend .schwd{color:var(--bad)}
+.schgrid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.funnel{display:flex;flex-direction:column;gap:12px;background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.fnrow{display:flex;flex-direction:column;gap:6px}
+.fnhead{display:flex;align-items:center;gap:8px;font-size:13px}
+.fnhead b{font-size:13.5px}
+.fndot{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+.fndesc{font-size:11px;color:var(--mut)}
+.fnn{margin-left:auto;font-size:16px;font-weight:700}
+.fntrack{height:9px;border-radius:6px;background:var(--line);overflow:hidden}
+.fntrack i{display:block;height:100%;border-radius:6px}
+.schhow{font-size:11.5px;color:var(--ink2);line-height:1.7;background:var(--surf2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:13px}
+.dqueue{display:flex;flex-direction:column;background:var(--surf);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.dqrow{display:flex;align-items:center;gap:11px;padding:12px 15px;border-top:1px solid var(--line);cursor:pointer;transition:.12s}
+.dqrow:first-child{border-top:none}
+.dqrow:hover{background:var(--surf2)}
+.wstatus{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+.dqmain{flex:1;min-width:0}
+.dqq{font-size:12.5px;font-weight:600;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dqsub{font-size:10.5px;color:var(--mut);margin-top:2px}
+.quizrow{display:grid;grid-template-columns:1fr auto auto auto auto;align-items:center;gap:14px;padding:12px 16px;border-top:1px solid var(--line)}
+.quizrow:first-child{border-top:none}
+.quizname{font-size:13px;font-weight:600}
+.quizsub{font-size:11px;color:var(--mut);margin-top:2px}
+.quizscore{font-family:'Space Grotesk';font-size:14px;font-weight:700}
+.quizweak{font-size:11px;color:var(--ink2);background:var(--surf2);border-radius:7px;padding:3px 9px;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ftoolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.fsearch{flex:1;min-width:220px;position:relative;display:flex;align-items:center}
+.fsicon{position:absolute;left:13px;font-size:15px;color:var(--mut)}
+.fsearch input{width:100%;font-family:'Noto Sans TC';font-size:13.5px;color:var(--ink);background:var(--surf);border:1px solid var(--line);border-radius:11px;padding:11px 14px 11px 36px;outline:none}
+.pillbtn{font-size:12.5px;font-weight:600;border:1px solid var(--line);background:var(--surf);color:var(--ink2);border-radius:11px;padding:10px 14px;cursor:pointer;white-space:nowrap;font-family:'Noto Sans TC'}
+.pillbtn.on{background:color-mix(in srgb,var(--gold) 18%,var(--surf));border-color:var(--gold);color:var(--ink)}
+.fchips{display:flex;gap:8px;flex-wrap:wrap}
+.fchip{font-size:12.5px;font-weight:600;border:1px solid var(--line);background:var(--surf);color:var(--ink2);border-radius:20px;padding:6px 14px;cursor:pointer;transition:.14s;font-family:'Noto Sans TC'}
+.fchip:hover{border-color:var(--pri)}
+.fchip.on{background:var(--pri);border-color:var(--pri);color:#fff}
+.fcount{font-size:11.5px;color:var(--mut)}
+.fogrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.fcard{background:var(--surf);border:1px solid var(--line);border-radius:15px;padding:16px;display:flex;flex-direction:column;gap:10px;transition:.16s}
+.fcard:hover{box-shadow:0 12px 28px -18px rgba(0,0,0,.32);transform:translateY(-2px)}
+.fcard.forgot{border-color:color-mix(in srgb,var(--gold) 55%,var(--line));background:color-mix(in srgb,var(--gold) 6%,var(--surf))}
+.fhead{display:flex;align-items:center;justify-content:space-between}
+.starbtn{font-size:18px;line-height:1;background:none;border:none;cursor:pointer;color:var(--mut);padding:0}
+.starbtn.on{color:var(--gold)}
+.fname{font-size:14.5px;font-weight:700}
+.fmath{background:var(--surf2);border:1px solid var(--line);border-radius:10px;padding:16px 12px;text-align:center;color:var(--ink);font-family:'Space Grotesk';font-size:15px;font-style:italic}
+.fdesc{font-size:12px;color:var(--ink2);line-height:1.6}
+.ftags{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}
+.ftag{font-size:10.5px;color:var(--mut);background:var(--surf2);border:1px solid var(--line);border-radius:6px;padding:2px 7px;font-family:'Space Grotesk'}
+@media(max-width:980px){.hero{grid-template-columns:1fr}.cardrow{grid-template-columns:repeat(2,1fr)}.qgrid,.subjwall,.fogrid{grid-template-columns:1fr 1fr}.focusband,.schgrid,.wtop{grid-template-columns:1fr}.vcontinue{grid-template-columns:1fr}.loopsteps{grid-template-columns:1fr 1fr}}
+</style>
+</helmet>
+<div class="app">
+<aside class="side">
+<div class="brand"><div class="logo disp">EE</div><div><b>電機技師作戰中心</b><span>MISSION · 2027</span></div></div>
+<div class="nsec">主控</div>
+<button class="nav {{homeOn}}" onClick="{{ goHome }}"><span class="i">◎</span>首頁</button>
+<button class="nav {{chOn}}" onClick="{{ goCh }}"><span class="i">▤</span>章節與課程<span class="nbadge mut">24 章 · 12 影片</span></button>
+<div class="nsec">練習</div>
+<button class="nav {{revOn}}" onClick="{{ goRev }}"><span class="i">↻</span>複習<span class="nbadge">5 到期</span></button>
+<button class="nav {{formulaOn}}" onClick="{{ goFormula }}"><span class="i">∑</span>公式庫<span class="nbadge mut">7 常忘</span></button>
+<div class="lvlcard">
+<div class="lvltop"><div class="avatar"><img src="assets/slimes/slime_builder_lv4.png" alt="隊長"></div><div style="flex:1;min-width:0"><b class="disp" style="font-size:14px">Lv.4</b><div class="jobttl">營造包 · 機電主任</div></div><span class="flame">🔥 6</span></div>
+<div class="xpbar"><div class="xpfill" style="width:62%"></div></div>
+<div class="xpmeta"><span>310 / 500 XP</span><span>下一級 Lv.5</span></div>
+</div>
+</aside>
+<main class="main">
+<div class="siteart" aria-hidden="true"></div>
+<div class="topbar">
+<div class="ptitle"><b>{{pageTitle}}</b><span>{{pageEng}}</span></div>
+<div class="tright">
+<div class="syncpill"><span class="syncdot"></span>Notion 已同步<u>2 分鐘前</u></div>
+<button class="notionlink">在 Notion 開啟 ↗</button>
+<div class="cdbadge"><b class="disp">69 週</b><span>距 2027 正考</span></div>
+<button class="btn pri">完成今日</button>
+</div>
+</div>
+<div class="scroll">
+<sc-if value="{{showHome}}" hint-placeholder-val="{{ true }}">
+<div class="screen" data-screen-label="首頁">
+<div class="hero">
+<div class="hwm2"></div>
+<div class="hi">
+<div class="herotop"><span class="greet">7月7日 週二</span><span class="missiontag">今晚任務 · TONIGHT</span></div>
+<h2>晚安，工程師 👷<br>準備好今晚的進度了嗎？</h2>
+<div class="quotecard">
+<span class="qmark disp">“</span>
+<div class="quote">今天不必追上所有進度，只要不放開手裡的這一題。</div>
+<div class="qsub">持續，就是最強的天賦<button class="qref">換一句 ↻</button></div>
+</div>
+<div class="yday">
+<div class="ydi"><b class="disp">67%</b><span class="ydlbl">昨日完成度 <span class="up">▲ +34%</span></span></div>
+<div class="ydi"><b class="disp">9.2h</b><span class="ydlbl">本週累積專注</span></div>
+<div class="ydi"><b class="disp">6</b><span class="ydlbl">連續達標天數</span></div>
+</div>
+</div>
+<div class="herobuddy">
+<div class="emblem">
+<div class="bring" style="--p:33"></div>
+<div class="bringin"></div>
+<div class="buddyslime"><img src="assets/slimes/slime_builder_lv4.png" alt="隊長"></div>
+<div class="emblembadge disp">1/3</div>
+</div>
+<div class="buddyname">營造包 · 機電主任</div>
+<div class="glabel">今晚進度 · 隊長陪你闖關</div>
+</div>
+</div>
+<div class="cardrow">
+<div class="scard"><div class="l">⏱ 今日專注</div><div class="v disp">48<u>分</u></div><div class="s">目標 120 分 · 還差 72 分</div></div>
+<div class="scard"><div class="l">✦ 今日獲得</div><div class="v disp">+150<u>XP</u></div><div class="s">完成全部關卡 +350 XP</div></div>
+<div class="scard"><div class="l">↻ 待複習</div><div class="v disp">5<u>題</u></div><div class="s">到期錯題 · 趁記憶還在</div></div>
+<div class="scard"><div class="l">◷ 整體進度</div><div class="v disp">54<u>%</u></div><div class="s">應達 57% · 落後一點，今晚補回</div></div>
+</div>
+<div class="sec">
+<div class="sechd"><h3>🎯 今晚關卡 <span class="badge">完成 1 / 3</span></h3><span class="badge">▶ 直接播放該章課程影片 · 已與課程庫連動</span></div>
+<div class="qgrid">
+<div class="qcard">
+<div class="qvid"><span class="vt">你的 YT 課程</span><div class="qstage disp">1</div><div class="play">▶</div><span class="vd">42 分 · 看到 68%</span><div class="vbarwrap"><div class="vbar" style="width:68%"></div></div></div>
+<div class="qbody">
+<span class="pill" style="background:#e3eaf0;color:#7d97b0">● 工程數學</span>
+<div class="qname">拉普拉斯轉換與反轉換</div>
+<div class="qnote">📝 重點：部分分式分解 + 常用轉換表，先把 sin/cos/e^at 三條背到反射。</div>
+<div class="qfoot"><span class="xp">✦ +150 XP</span><button class="btn pri sm">開始專注 ▶</button></div>
+</div>
+</div>
+<div class="qcard">
+<div class="qvid"><span class="vt">你的 YT 課程</span><div class="qstage disp">2</div><div class="play">▶</div><span class="vd">35 分 · 未開始</span></div>
+<div class="qbody">
+<span class="pill" style="background:#e3eaf0;color:#7d97b0">● 工程數學</span>
+<div class="qname">一階／二階常微分方程</div>
+<div class="qnote">📝 今日目標：完成本章觀念與例題，讀完開計時器記錄專注。</div>
+<div class="qfoot"><span class="xp">✦ +150 XP</span><button class="btn pri sm">開始專注 ▶</button></div>
+</div>
+</div>
+<div class="qcard">
+<div class="qvid nolink"><div class="qstage disp">3</div><div class="nl"><b>尚未連結影片</b><span>到「章節與課程」貼上 YT 連結</span></div></div>
+<div class="qbody">
+<span class="pill" style="background:#ece4f0;color:#a98fb8">● 電子學</span>
+<div class="qname">MOSFET 與小訊號</div>
+<div class="qnote">📝 今日目標：完成本章觀念與例題，讀完開計時器記錄專注。</div>
+<div class="qfoot"><span class="xp">✦ +100 XP</span><button class="btn pri sm">開始專注 ▶</button></div>
+</div>
+</div>
+</div>
+</div>
+<div class="focusband">
+<div class="fb-l">
+<div style="font-size:15px;font-weight:700">⏱ 專注計時器 <span style="font-size:11px;color:var(--mut);font-weight:500">讀紙本／電子筆記時用 · 時數按科目分開記</span></div>
+<div class="subjchips"><span class="lb">記到哪一科：</span><button class="schip on">工程數學</button><button class="schip">電路學</button><button class="schip">電子學</button><button class="schip">電機機械</button><button class="schip">電力系統</button><button class="schip">工業配電</button></div>
+<div class="fb-stats">
+<div class="fbi"><b class="disp">48 分</b><span>今日累積</span></div>
+<div class="fbi"><b class="disp">9.2 小時</b><span>本週累積</span></div>
+<div class="fbi"><b class="disp">2</b><span>分心紀錄</span></div>
+</div>
+</div>
+<div class="hbars">
+<div style="font-size:11px;color:var(--mut);margin-bottom:2px">各科累積時數（由計時器記錄）</div>
+<div class="hbar"><span class="t">工程數學</span><span class="tr"><i style="width:46%;background:#7d97b0"></i></span><span class="n">6.5h</span></div>
+<div class="hbar"><span class="t">電路學</span><span class="tr"><i style="width:100%;background:#86a98c"></i></span><span class="n">14h</span></div>
+<div class="hbar"><span class="t">電子學</span><span class="tr"><i style="width:64%;background:#a98fb8"></i></span><span class="n">9h</span></div>
+<div class="hbar"><span class="t">電機機械</span><span class="tr"><i style="width:79%;background:#c8a98c"></i></span><span class="n">11h</span></div>
+<div class="hbar"><span class="t">電力系統</span><span class="tr"><i style="width:57%;background:#c98b86"></i></span><span class="n">8h</span></div>
+<div class="hbar"><span class="t">工業配電</span><span class="tr"><i style="width:36%;background:#b0a17a"></i></span><span class="n">5h</span></div>
+</div>
+<div class="fb-r">
+<button class="btn pri">▶ 開始專注</button>
+<button class="btn">⚡ 記一次分心</button>
+<button class="btn ghost">⟲ 歸零重設</button>
+</div>
+</div>
+<div class="loopcard">
+<div class="loophd"><span class="ico">🧠</span><div><b>NotebookLM 記憶循環</b><span>讀完 → 出題自測 → 記錄弱點 → 回灌筆記，越測越知道自己弱在哪</span></div><button class="btn sm" style="margin-left:auto">🔗 開啟我的筆記本</button></div>
+<div class="loopsteps">
+<div class="lstep"><span class="looparrow">➜</span><div class="n">1</div><b>讀完一章</b><span>教材已上傳 NotebookLM 當來源</span></div>
+<div class="lstep"><span class="looparrow">➜</span><div class="n">2</div><b>出題自測</b><span>一鍵複製出題 Prompt（5 題＋詳解）</span><div class="act"><button class="btn sm">📋 複製 Prompt</button></div></div>
+<div class="lstep"><span class="looparrow">➜</span><div class="n">3</div><b>記錄結果</b><span>對幾題、卡在哪，30 秒記下</span><div class="act"><button class="btn sm">✎ 記錄自測</button></div></div>
+<div class="lstep"><div class="n">4</div><b>回灌筆記</b><span>匯出弱點 .md 丟回 NotebookLM</span><div class="act"><button class="btn sm">⬇ 匯出弱點檔</button></div></div>
+</div>
+<div class="loopfoot">最近一次自測：昨天 · 拉普拉斯轉換 4/5 · 弱點「反轉換的部分分式」已寫入弱點檔</div>
+</div>
+<div class="sec">
+<div class="sechd"><h3>🎮 我的工程隊伍 <span class="badge">六職涯 · 點角色看升遷路線</span></h3><span class="badge">考科精熟 → 職位晉升</span></div>
+<div class="squad">
+<div class="slimecard weak">
+<div class="slimewrap"><img src="assets/slimes/slime_worker_lv2.png" alt="施工包"></div>
+<div class="rankbadge disp">Lv.2</div>
+<div class="sinfo"><b>半桶師</b><span class="sunit">施工包 · 工程數學</span><div class="stars"><span class="star on">★</span><span class="star on">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div><div class="sbar"><i style="width:40%;background:#7d97b0"></i></div><span class="snext">再 12% 升「師傅」</span></div>
+</div>
+<div class="slimecard">
+<div class="slimewrap"><img src="assets/slimes/slime_builder_lv4.png" alt="營造包"></div>
+<div class="rankbadge disp">Lv.4</div>
+<div class="sinfo"><b>機電主任</b><span class="sunit">營造包 · 電路學</span><div class="stars"><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star">★</span></div><div class="sbar"><i style="width:65%;background:#86a98c"></i></div><span class="snext">再 7% 升「專案經理」</span></div>
+</div>
+<div class="slimecard">
+<div class="slimewrap"><img src="assets/slimes/slime_inspector_lv2.png" alt="監造單位"></div>
+<div class="rankbadge disp">Lv.2</div>
+<div class="sinfo"><b>機電監造工程師</b><span class="sunit">監造單位 · 電子學</span><div class="stars"><span class="star on">★</span><span class="star on">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div><div class="sbar"><i style="width:55%;background:#a98fb8"></i></div><span class="snext">再 9% 升「資深監造工程師」</span></div>
+</div>
+<div class="slimecard">
+<div class="slimewrap"><img src="assets/slimes/slime_architect_lv3.png" alt="建築師事務所"></div>
+<div class="rankbadge disp">Lv.3</div>
+<div class="sinfo"><b>設計組長</b><span class="sunit">建築師事務所 · 電機機械</span><div class="stars"><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star">★</span><span class="star">★</span></div><div class="sbar"><i style="width:30%;background:#c8a98c"></i></div><span class="snext">再 14% 升「設計副理」</span></div>
+</div>
+<div class="slimecard">
+<div class="slimewrap"><img src="assets/slimes/slime_developer_lv3.png" alt="建設公司"></div>
+<div class="rankbadge disp">Lv.3</div>
+<div class="sinfo"><b>規劃經理</b><span class="sunit">建設公司 · 電力系統</span><div class="stars"><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star">★</span><span class="star">★</span></div><div class="sbar"><i style="width:45%;background:#c98b86"></i></div><span class="snext">再 11% 升「營運協理」</span></div>
+</div>
+<div class="slimecard">
+<div class="slimewrap"><img src="assets/slimes/slime_owner_lv2.png" alt="業主單位"></div>
+<div class="rankbadge disp">Lv.2</div>
+<div class="sinfo"><b>主辦管理師</b><span class="sunit">業主單位 · 工業配電</span><div class="stars"><span class="star on">★</span><span class="star on">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div><div class="sbar"><i style="width:50%;background:#b0a17a"></i></div><span class="snext">再 10% 升「廠務課長」</span></div>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{showCh}}" hint-placeholder-val="{{ false }}">
+<div class="screen" data-screen-label="章節與課程">
+<div class="alert"><div class="ai">⚠️</div><div><b>偵測到「工程數學」落後 2 章</b><p>已自動把本週目標 +1 章、並把序列阻抗一章往前排。穩住節奏，這科是你投報率最高的地方。</p></div><button class="btn sm" style="margin-left:auto">查看新排程</button></div>
+<div class="sec">
+<div class="sechd"><h3>▶ 繼續觀看 <span class="badge">接續上次進度</span></h3></div>
+<div class="vcontinue">
+<div class="vcont">
+<div class="vthumb"><div class="vplay">▶</div><span class="vdur">42 分</span><div class="vbarwrap"><div class="vbar" style="width:68%"></div></div></div>
+<div class="vcmeta"><span class="fsubj" style="background:#e3eaf0;color:#7d97b0">工程數學</span><div class="vtitle">拉氏轉換表與反轉換技巧</div><div class="vsub">拉普拉斯轉換與反轉換 · 已看 68%</div></div>
+</div>
+<div class="vcont">
+<div class="vthumb"><div class="vplay">▶</div><span class="vdur">46 分</span><div class="vbarwrap"><div class="vbar" style="width:40%"></div></div></div>
+<div class="vcmeta"><span class="fsubj" style="background:#ece4f0;color:#a98fb8">電子學</span><div class="vtitle">BJT 小訊號模型與三組態</div><div class="vsub">BJT 放大器 · 已看 40%</div></div>
+</div>
+</div>
+</div>
+<div class="sec">
+<div class="sechd"><h3>📊 六科進度牆 <span class="badge">整體 54% 已熟</span></h3><span class="badge">弱科優先 · 點科目展開章節</span></div>
+<div class="subjwall">
+<div class="subjcard weak">
+<div class="subjslime"><div class="ring" style="--p:40;--rc:#7d97b0"><i><img src="assets/slimes/slime_worker_lv2.png" alt=""></i></div><div class="pctbadge disp" style="color:#7d97b0">40%</div></div>
+<div class="scinfo"><b><span class="dot" style="background:#7d97b0"></span>工程數學 <span class="weaktag">最弱 · 優先</span></b><div class="jobline">施工包 · Lv.2 半桶師</div><div class="m">1 / 5 章已熟 · 剩 4 章</div><div class="e">預估完成 2026/09</div></div>
+</div>
+<div class="subjcard">
+<div class="subjslime"><div class="ring" style="--p:78;--rc:#86a98c"><i><img src="assets/slimes/slime_builder_lv4.png" alt=""></i></div><div class="pctbadge disp" style="color:#86a98c">78%</div></div>
+<div class="scinfo"><b><span class="dot" style="background:#86a98c"></span>電路學</b><div class="jobline">營造包 · Lv.4 機電主任</div><div class="m">2 / 4 章已熟 · 剩 2 章</div><div class="e">預估完成 2026/08</div></div>
+</div>
+<div class="subjcard">
+<div class="subjslime"><div class="ring" style="--p:51;--rc:#a98fb8"><i><img src="assets/slimes/slime_inspector_lv2.png" alt=""></i></div><div class="pctbadge disp" style="color:#a98fb8">51%</div></div>
+<div class="scinfo"><b><span class="dot" style="background:#a98fb8"></span>電子學</b><div class="jobline">監造單位 · Lv.2 機電監造工程師</div><div class="m">1 / 4 章已熟 · 剩 3 章</div><div class="e">預估完成 2026/09</div></div>
+</div>
+<div class="subjcard">
+<div class="subjslime"><div class="ring" style="--p:56;--rc:#c8a98c"><i><img src="assets/slimes/slime_architect_lv3.png" alt=""></i></div><div class="pctbadge disp" style="color:#c8a98c">56%</div></div>
+<div class="scinfo"><b><span class="dot" style="background:#c8a98c"></span>電機機械</b><div class="jobline">建築師事務所 · Lv.3 設計組長</div><div class="m">1 / 4 章已熟 · 剩 3 章</div><div class="e">預估完成 2026/09</div></div>
+</div>
+<div class="subjcard">
+<div class="subjslime"><div class="ring" style="--p:49;--rc:#c98b86"><i><img src="assets/slimes/slime_developer_lv3.png" alt=""></i></div><div class="pctbadge disp" style="color:#c98b86">49%</div></div>
+<div class="scinfo"><b><span class="dot" style="background:#c98b86"></span>電力系統</b><div class="jobline">建設公司 · Lv.3 規劃經理</div><div class="m">1 / 4 章已熟 · 剩 3 章</div><div class="e">預估完成 2026/10</div></div>
+</div>
+<div class="subjcard">
+<div class="subjslime"><div class="ring" style="--p:37;--rc:#b0a17a"><i><img src="assets/slimes/slime_owner_lv2.png" alt=""></i></div><div class="pctbadge disp" style="color:#b0a17a">37%</div></div>
+<div class="scinfo"><b><span class="dot" style="background:#b0a17a"></span>工業配電</b><div class="jobline">業主單位 · Lv.2 主辦管理師</div><div class="m">0 / 3 章已熟 · 剩 3 章</div><div class="e">預估完成 2026/11</div></div>
+</div>
+</div>
+</div>
+<div class="sec">
+<div class="sechd"><h3>🌊 四波次作戰時間軸</h3><span class="badge">今天在第 2 波 · 距本波結束 116 天</span></div>
+<div class="tl">
+<div class="tltrack">
+<div class="tlseg" style="width:31%;background:color-mix(in srgb,#86a98c 16%,var(--surf))"><div class="fill" style="width:100%;background:#86a98c"></div><span class="tn">第1波 打底</span></div>
+<div class="tlseg" style="width:24%;background:color-mix(in srgb,#7d97b0 16%,var(--surf))"><div class="fill" style="width:43%;background:#7d97b0"></div><span class="tn" style="color:var(--pri2);text-shadow:none">第2波 強化</span></div>
+<div class="tlseg" style="width:24%;background:color-mix(in srgb,#a98fb8 16%,var(--surf))"><span class="tn" style="color:#a98fb8;text-shadow:none">第3波 題海</span></div>
+<div class="tlseg" style="width:21%;background:color-mix(in srgb,#c98b86 16%,var(--surf))"><span class="tn" style="color:#c98b86;text-shadow:none">第4波 衝刺</span></div>
+<div class="tltoday" style="left:41.4%"><span>今天 7/7</span></div>
+</div>
+<div class="tldates"><span style="left:0">2025.07 開訓</span><span style="left:31%">2026.04</span><span style="left:55%">2026.11</span><span style="left:79%">2027.06</span><span style="left:100%">2027.11 正考</span></div>
+<div class="wavegrid">
+<div class="wavebox done"><span class="donetag">已完成</span><span class="wk"><span class="dot" style="background:#86a98c"></span>WAVE 1</span><b>基礎打底</b><span class="wr">2025.07 – 2026.03</span><div class="wm">涵蓋 <em>6 章</em> · 全數已熟 ✓</div></div>
+<div class="wavebox cur"><span class="curtag">進行中</span><span class="wk"><span class="dot" style="background:#7d97b0"></span>WAVE 2</span><b>進階強化</b><span class="wr">2026.04 – 2026.10</span><div class="wm">涵蓋 <em>14 章</em> · 已熟 <em>4 章</em><br>剩 <em>116 天</em> · 需每週 <em>0.6 章</em></div></div>
+<div class="wavebox"><span class="wk"><span class="dot" style="background:#a98fb8"></span>WAVE 3</span><b>歷屆題海</b><span class="wr">2026.11 – 2027.05</span><div class="wm">收尾 <em>4 章</em>＋近 <em>10 年</em>歷屆題<br>錯題全部進錯題本</div></div>
+<div class="wavebox"><span class="wk"><span class="dot" style="background:#c98b86"></span>WAVE 4</span><b>衝刺模考</b><span class="wr">2027.06 – 2027.11</span><div class="wm">全科模考＋弱點回補<br>只複習錯題與常忘公式</div></div>
+</div>
+</div>
+</div>
+<div class="sec">
+<div class="sechd"><h3>🗂 章節清單 <span class="badge">改狀態即時同步 Notion</span></h3><div class="subjchips"><span class="lb">樣式：</span><button class="{{vCardsCls}}" onClick="{{ setCards }}">卡片式</button><button class="{{vPathCls}}" onClick="{{ setPath }}">關卡路線</button><button class="{{vTableCls}}" onClick="{{ setTable }}">表格式</button></div></div>
+<sc-if value="{{chTable}}" hint-placeholder-val="{{ false }}">
+<div class="chcols"><span></span><span>章節</span><span>課程影片</span><span>波次</span><span>錄影</span><span></span><span>讀書狀態</span></div>
+<div class="chgroup">
+<div class="chhd"><span class="dot" style="background:#7d97b0"></span><b>工程數學</b><span class="c">1/5 已熟 · 施工包</span></div>
+<div class="chrow done"><span class="chnd"><i class="ln dn"></i><span class="pdot pds done">✓</span></span><span class="nm">線性代數與特徵值</span><button class="chvid off" title="貼上影片連結"><span class="cvp">＋</span><span class="cvt">連結影片</span></button><span class="wp">第1波</span><span class="ic" title="未錄影">🎬</span><a class="nopen" title="在 Notion 開啟">↗</a><select class="sel"><option>歷屆題</option><option>待讀</option><option>第一輪</option><option>已熟</option></select></div>
+<div class="chrow cur"><span class="chnd"><i class="ln"></i><span class="pdot pds cur">1</span></span><span class="nm">拉普拉斯轉換與反轉換</span><button class="chvid" title="播放課程影片"><span class="cvp">▶</span><span class="cvt">42分</span></button><span class="wp">第2波</span><span class="ic recon" title="已錄影">🎬</span><a class="nopen" title="在 Notion 開啟">↗</a><select class="sel"><option>第一輪</option><option>待讀</option><option>歷屆題</option><option>已熟</option></select></div>
+<div class="chrow"><span class="chnd"><i class="ln"></i><span class="pdot pds">·</span></span><span class="nm">一階／二階常微分方程</span><button class="chvid" title="播放課程影片"><span class="cvp">▶</span><span class="cvt">35分</span></button><span class="wp">第2波</span><span class="ic recon" title="已錄影">🎬</span><a class="nopen" title="在 Notion 開啟">↗</a><select class="sel"><option>待讀</option><option>第一輪</option><option>歷屆題</option><option>已熟</option></select></div>
+<div class="chrow"><span class="chnd"><i class="ln"></i><span class="pdot pds">·</span></span><span class="nm">傅立葉級數與轉換</span><button class="chvid" title="播放課程影片"><span class="cvp">▶</span><span class="cvt">38分</span></button><span class="wp">第2波</span><span class="ic recon" title="已錄影">🎬</span><a class="nopen" title="在 Notion 開啟">↗</a><select class="sel"><option>待讀</option><option>第一輪</option><option>歷屆題</option><option>已熟</option></select></div>
+<div class="chrow"><span class="chnd"><i class="ln up"></i><span class="pdot pds">·</span></span><span class="nm">機率與統計</span><button class="chvid off" title="貼上影片連結"><span class="cvp">＋</span><span class="cvt">連結影片</span></button><span class="wp">第2波</span><span class="ic" title="未錄影">🎬</span><a class="nopen" title="在 Notion 開啟">↗</a><select class="sel"><option>待讀</option><option>第一輪</option><option>歷屆題</option><option>已熟</option></select></div>
+</div>
+<div class="chgroup">
+<div class="chhd"><span class="dot" style="background:#86a98c"></span><b>電路學</b><span class="c">2/4 已熟 · 營造包</span></div>
+<div class="chrow done"><span class="chnd"><i class="ln dn"></i><span class="pdot pds done">✓</span></span><span class="nm">RLC 暫態響應</span><button class="chvid" title="播放課程影片"><span class="cvp">▶</span><span class="cvt">28分</span></button><span class="wp">第1波</span><span class="ic recon" title="已錄影">🎬</span><a class="nopen" title="在 Notion 開啟">↗</a><select class="sel"><option>已熟</option><option>待讀</option><option>第一輪</option><option>歷屆題</option></select></div>
+<div class="chrow done"><span class="chnd"><i class="ln"></i><span class="pdot pds done">✓</span></span><span class="nm">相量與弦波穩態</span><button class="chvid off" title="貼上影片連結"><span class="cvp">＋</span><span class="cvt">連結影片</span></button><span class="wp">第1波</span><span class="ic" title="未錄影">🎬</span><a class="nopen" title="在 Notion 開啟">↗</a><select class="sel"><option>已熟</option><option>待讀</option><option>第一輪</option><option>歷屆題</option></select></div>
+<div class="chrow cur"><span class="chnd"><i class="ln"></i><span class="pdot pds cur">2</span></span><span class="nm">三相功率分析</span><button class="chvid" title="播放課程影片"><span class="cvp">▶</span><span class="cvt">31分</span></button><span class="wp">第2波</span><span class="ic recon" title="已錄影">🎬</span><a class="nopen" title="在 Notion 開啟">↗</a><select class="sel"><option>歷屆題</option><option>待讀</option><option>第一輪</option><option>已熟</option></select></div>
+<div class="chrow"><span class="chnd"><i class="ln up"></i><span class="pdot pds">1</span></span><span class="nm">諧振與二埠網路</span><button class="chvid off" title="貼上影片連結"><span class="cvp">＋</span><span class="cvt">連結影片</span></button><span class="wp">第2波</span><span class="ic" title="未錄影">🎬</span><a class="nopen" title="在 Notion 開啟">↗</a><select class="sel"><option>第一輪</option><option>待讀</option><option>歷屆題</option><option>已熟</option></select></div>
+</div>
+<div class="chgroup">
+<div class="chhd"><span class="dot" style="background:#a98fb8"></span><b>電子學</b><span class="c">1/4 已熟 · 監造單位</span></div>
+<div class="chrow done"><span class="chnd"><i class="ln dn"></i><span class="pdot pds done">✓</span></span><span class="nm">二極體電路</span><button class="chvid off" title="貼上影片連結"><span class="cvp">＋</span><span class="cvt">連結影片</span></button><span class="wp">第1波</span><span class="ic" title="未錄影">🎬</span><a class="nopen" title="在 Notion 開啟">↗</a><select class="sel"><option>已熟</option><option>待讀</option><option>第一輪</option><option>歷屆題</option></select></div>
+<div class="chrow cur"><span class="chnd"><i class="ln"></i><span class="pdot pds cur">1</span></span><span class="nm">BJT 放大器</span><button class="chvid" title="播放課程影片"><span class="cvp">▶</span><span class="cvt">46分</span></button><span class="wp">第2波</span><span class="ic recon" title="已錄影">🎬</span><a class="nopen" title="在 Notion 開啟">↗</a><select class="sel"><option>第一輪</option><option>待讀</option><option>歷屆題</option><option>已熟</option></select></div>
+<div class="chrow"><span class="chnd"><i class="ln up"></i><span class="pdot pds">·</span></span><span class="nm">MOSFET 與小訊號</span><button class="chvid off" title="貼上影片連結"><span class="cvp">＋</span><span class="cvt">連結影片</span></button><span class="wp">第2波</span><span class="ic" title="未錄影">🎬</span><a class="nopen" title="在 Notion 開啟">↗</a><select class="sel"><option>待讀</option><option>第一輪</option><option>歷屆題</option><option>已熟</option></select></div>
+</div>
+</sc-if>
+<sc-if value="{{chCards}}" hint-placeholder-val="{{ true }}">
+<div class="sec">
+<h4 class="subhd"><span class="dot" style="background:#7d97b0"></span>工程數學 <span class="badge">1/5 已熟 · 施工包</span></h4>
+<div class="ccgrid">
+<div class="qcard">
+<div class="qvid ccvid"><div class="play">▶</div><span class="vd">42分 · 68%</span><div class="vbarwrap"><div class="vbar" style="width:68%"></div></div></div>
+<div class="qbody"><div class="cctop"><span class="wp">第2波</span><span class="ic recon" title="已錄影">🎬</span><a class="nopen" title="在 Notion 開啟">↗</a></div><div class="ccname">拉普拉斯轉換與反轉換</div><div class="ccfoot"><select class="sel f1"><option>第一輪</option><option>待讀</option><option>歷屆題</option><option>已熟</option></select></div></div>
+</div>
+<div class="qcard">
+<div class="qvid ccvid"><div class="play">▶</div><span class="vd">35分</span></div>
+<div class="qbody"><div class="cctop"><span class="wp">第2波</span><span class="ic recon" title="已錄影">🎬</span><a class="nopen" title="在 Notion 開啟">↗</a></div><div class="ccname">一階／二階常微分方程</div><div class="ccfoot"><select class="sel f1"><option>待讀</option><option>第一輪</option><option>歷屆題</option><option>已熟</option></select></div></div>
+</div>
+<div class="qcard">
+<div class="qvid ccvid nolink"><div class="nl"><b>尚未連結影片</b></div></div>
+<div class="qbody"><div class="cctop"><span class="wp">第1波</span><span class="ic" title="未錄影">🎬</span><a class="nopen" title="在 Notion 開啟">↗</a></div><div class="ccname">線性代數與特徵值</div><div class="ccfoot"><select class="sel f1"><option>歷屆題</option><option>待讀</option><option>第一輪</option><option>已熟</option></select></div></div>
+</div>
+<div class="qcard">
+<div class="qvid ccvid"><div class="play">▶</div><span class="vd">38分</span></div>
+<div class="qbody"><div class="cctop"><span class="wp">第2波</span><span class="ic recon" title="已錄影">🎬</span><a class="nopen" title="在 Notion 開啟">↗</a></div><div class="ccname">傅立葉級數與轉換</div><div class="ccfoot"><select class="sel f1"><option>待讀</option><option>第一輪</option><option>歷屆題</option><option>已熟</option></select></div></div>
+</div>
+<div class="qcard">
+<div class="qvid ccvid nolink"><div class="nl"><b>尚未連結影片</b></div></div>
+<div class="qbody"><div class="cctop"><span class="wp">第2波</span><span class="ic" title="未錄影">🎬</span><a class="nopen" title="在 Notion 開啟">↗</a></div><div class="ccname">機率與統計</div><div class="ccfoot"><select class="sel f1"><option>待讀</option><option>第一輪</option><option>歷屆題</option><option>已熟</option></select></div></div>
+</div>
+</div>
+</div>
+<div class="sec">
+<h4 class="subhd"><span class="dot" style="background:#86a98c"></span>電路學 <span class="badge">2/4 已熟 · 營造包</span></h4>
+<div class="ccgrid">
+<div class="qcard">
+<div class="qvid ccvid"><div class="play">▶</div><span class="vd">28分 · 已看完</span><div class="vbarwrap"><div class="vbar" style="width:100%"></div></div></div>
+<div class="qbody"><div class="cctop"><span class="wp">第1波</span><span class="ic recon" title="已錄影">🎬</span><a class="nopen" title="在 Notion 開啟">↗</a></div><div class="ccname">RLC 暫態響應</div><div class="ccfoot"><select class="sel f1"><option>已熟</option><option>待讀</option><option>第一輪</option><option>歷屆題</option></select></div></div>
+</div>
+<div class="qcard">
+<div class="qvid ccvid nolink"><div class="nl"><b>尚未連結影片</b></div></div>
+<div class="qbody"><div class="cctop"><span class="wp">第1波</span><span class="ic" title="未錄影">🎬</span><a class="nopen" title="在 Notion 開啟">↗</a></div><div class="ccname">相量與弦波穩態</div><div class="ccfoot"><select class="sel f1"><option>已熟</option><option>待讀</option><option>第一輪</option><option>歷屆題</option></select></div></div>
+</div>
+<div class="qcard">
+<div class="qvid ccvid"><div class="play">▶</div><span class="vd">31分 · 24%</span><div class="vbarwrap"><div class="vbar" style="width:24%"></div></div></div>
+<div class="qbody"><div class="cctop"><span class="wp">第2波</span><span class="ic recon" title="已錄影">🎬</span><a class="nopen" title="在 Notion 開啟">↗</a></div><div class="ccname">三相功率分析</div><div class="ccfoot"><select class="sel f1"><option>歷屆題</option><option>待讀</option><option>第一輪</option><option>已熟</option></select></div></div>
+</div>
+<div class="qcard">
+<div class="qvid ccvid nolink"><div class="nl"><b>尚未連結影片</b></div></div>
+<div class="qbody"><div class="cctop"><span class="wp">第2波</span><span class="ic" title="未錄影">🎬</span><a class="nopen" title="在 Notion 開啟">↗</a></div><div class="ccname">諧振與二埠網路</div><div class="ccfoot"><select class="sel f1"><option>第一輪</option><option>待讀</option><option>歷屆題</option><option>已熟</option></select></div></div>
+</div>
+</div>
+</div>
+<div class="sec">
+<h4 class="subhd"><span class="dot" style="background:#a98fb8"></span>電子學 <span class="badge">1/4 已熟 · 監造單位</span></h4>
+<div class="ccgrid">
+<div class="qcard">
+<div class="qvid ccvid nolink"><div class="nl"><b>尚未連結影片</b></div></div>
+<div class="qbody"><div class="cctop"><span class="wp">第1波</span><span class="ic" title="未錄影">🎬</span><a class="nopen" title="在 Notion 開啟">↗</a></div><div class="ccname">二極體電路</div><div class="ccfoot"><select class="sel f1"><option>已熟</option><option>待讀</option><option>第一輪</option><option>歷屆題</option></select></div></div>
+</div>
+<div class="qcard">
+<div class="qvid ccvid"><div class="play">▶</div><span class="vd">46分 · 40%</span><div class="vbarwrap"><div class="vbar" style="width:40%"></div></div></div>
+<div class="qbody"><div class="cctop"><span class="wp">第2波</span><span class="ic recon" title="已錄影">🎬</span><a class="nopen" title="在 Notion 開啟">↗</a></div><div class="ccname">BJT 放大器</div><div class="ccfoot"><select class="sel f1"><option>第一輪</option><option>待讀</option><option>歷屆題</option><option>已熟</option></select></div></div>
+</div>
+<div class="qcard">
+<div class="qvid ccvid nolink"><div class="nl"><b>尚未連結影片</b></div></div>
+<div class="qbody"><div class="cctop"><span class="wp">第2波</span><span class="ic" title="未錄影">🎬</span><a class="nopen" title="在 Notion 開啟">↗</a></div><div class="ccname">MOSFET 與小訊號</div><div class="ccfoot"><select class="sel f1"><option>待讀</option><option>第一輪</option><option>歷屆題</option><option>已熟</option></select></div></div>
+</div>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{chPath}}" hint-placeholder-val="{{ false }}">
+<div class="pathwrap">
+<div class="pathcard">
+<div class="pathhd"><span class="dot" style="background:#7d97b0"></span><div><b style="font-size:14px">工程數學</b><div class="jobline">施工包 · Lv.2 半桶師</div></div><img src="assets/slimes/slime_worker_lv2.png" alt=""></div>
+<div class="pnode"><div class="pline"></div><div class="pdot done">✓</div><div class="pmain"><div class="pname done">線性代數與特徵值</div><div class="pmeta"><span class="pstat" style="color:var(--good)">歷屆題</span><button class="pv off">＋ 影片</button></div></div></div>
+<div class="pnode"><div class="pline"></div><div class="pdot cur">1</div><div class="pmain"><div class="pname">拉普拉斯轉換與反轉換</div><div class="pmeta"><span class="pstat" style="color:var(--pri2)">第一輪</span><button class="pv">▶ 42分 · 68%</button><a class="nopen">↗</a></div></div></div>
+<div class="pnode"><div class="pline"></div><div class="pdot">·</div><div class="pmain"><div class="pname">一階／二階常微分方程</div><div class="pmeta"><span class="pstat">待讀</span><button class="pv">▶ 35分</button><a class="nopen">↗</a></div></div></div>
+<div class="pnode"><div class="pline"></div><div class="pdot">·</div><div class="pmain"><div class="pname">傅立葉級數與轉換</div><div class="pmeta"><span class="pstat">待讀</span><button class="pv">▶ 38分</button><a class="nopen">↗</a></div></div></div>
+<div class="pnode"><div class="pdot">·</div><div class="pmain"><div class="pname">機率與統計</div><div class="pmeta"><span class="pstat">待讀</span><button class="pv off">＋ 影片</button><a class="nopen">↗</a></div></div></div>
+</div>
+<div class="pathcard">
+<div class="pathhd"><span class="dot" style="background:#86a98c"></span><div><b style="font-size:14px">電路學</b><div class="jobline">營造包 · Lv.4 機電主任</div></div><img src="assets/slimes/slime_builder_lv4.png" alt=""></div>
+<div class="pnode"><div class="pline"></div><div class="pdot done">✓</div><div class="pmain"><div class="pname done">RLC 暫態響應</div><div class="pmeta"><span class="pstat" style="color:var(--good)">已熟</span><button class="pv">▶ 已看完</button></div></div></div>
+<div class="pnode"><div class="pline"></div><div class="pdot done">✓</div><div class="pmain"><div class="pname done">相量與弦波穩態</div><div class="pmeta"><span class="pstat" style="color:var(--good)">已熟</span><button class="pv off">＋ 影片</button></div></div></div>
+<div class="pnode"><div class="pline"></div><div class="pdot cur">2</div><div class="pmain"><div class="pname">三相功率分析</div><div class="pmeta"><span class="pstat" style="color:var(--pri2)">歷屆題</span><button class="pv">▶ 31分 · 24%</button><a class="nopen">↗</a></div></div></div>
+<div class="pnode"><div class="pdot">1</div><div class="pmain"><div class="pname">諧振與二埠網路</div><div class="pmeta"><span class="pstat">第一輪</span><button class="pv off">＋ 影片</button><a class="nopen">↗</a></div></div></div>
+</div>
+<div class="pathcard">
+<div class="pathhd"><span class="dot" style="background:#a98fb8"></span><div><b style="font-size:14px">電子學</b><div class="jobline">監造單位 · Lv.2 機電監造工程師</div></div><img src="assets/slimes/slime_inspector_lv2.png" alt=""></div>
+<div class="pnode"><div class="pline"></div><div class="pdot done">✓</div><div class="pmain"><div class="pname done">二極體電路</div><div class="pmeta"><span class="pstat" style="color:var(--good)">已熟</span><button class="pv off">＋ 影片</button></div></div></div>
+<div class="pnode"><div class="pline"></div><div class="pdot cur">1</div><div class="pmain"><div class="pname">BJT 放大器</div><div class="pmeta"><span class="pstat" style="color:var(--pri2)">第一輪</span><button class="pv">▶ 46分 · 40%</button><a class="nopen">↗</a></div></div></div>
+<div class="pnode"><div class="pdot">·</div><div class="pmain"><div class="pname">MOSFET 與小訊號</div><div class="pmeta"><span class="pstat">待讀</span><button class="pv off">＋ 影片</button><a class="nopen">↗</a></div></div></div>
+</div>
+</div>
+</sc-if>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{showRev}}" hint-placeholder-val="{{ false }}">
+<div class="screen" data-screen-label="複習">
+<div class="cardrow">
+<div class="scard"><div class="l">↻ 今日到期</div><div class="v disp" style="color:var(--bad)">5<u>題</u></div><div class="s">現在就清掉，趁記憶還在</div></div>
+<div class="scard"><div class="l">📅 本週待複習</div><div class="v disp">12<u>題</u></div><div class="s">平均每天 1.7 題</div></div>
+<div class="scard"><div class="l">🔥 連續複習</div><div class="v disp">6<u>天</u></div><div class="s">每天清空佇列就 +1</div></div>
+<div class="scard"><div class="l">🎯 攻克率</div><div class="v disp" style="color:var(--good)">22<u>%</u></div><div class="s">連對 3 次自動封存</div></div>
+</div>
+<div class="sec">
+<div class="sechd"><h3>🔁 今日待複習 <span class="badge">間隔複習 · 答對才往後排</span></h3><div style="display:flex;gap:8px"><button class="btn sm">🎧 錯題複習電台</button><button class="btn sm">⬇ 匯出給 NotebookLM</button></div></div>
+<div class="duegrid">
+<div class="duecard">
+<div class="dc-top"><span class="pill" style="background:#e3eaf0;color:#7d97b0">● 工程數學</span><span class="cpill" style="background:#ece4f0;color:#a98fb8">公式記錯</span></div>
+<div class="dq">求 f(t)=t·e^(-2t)·u(t) 的拉氏轉換</div>
+<div class="dc-meta">拉普拉斯轉換與反轉換 · 108 高考 第三題</div>
+<div class="dc-foot"><div class="streak"><span>連對</span><span class="sdot on"></span><span class="sdot"></span><span class="sdot"></span></div><button class="btn pri sm">開始重練 ▶</button></div>
+</div>
+<div class="duecard">
+<div class="dc-top"><span class="pill" style="background:#f2e2e0;color:#c98b86">● 電力系統</span><span class="cpill" style="background:#e3eaf0;color:#7d97b0">觀念不熟</span></div>
+<div class="dq">單線接地故障電流 Ia 的序網連接與表示式</div>
+<div class="dc-meta">對稱成分 · 110 高考 第二題</div>
+<div class="dc-foot"><div class="streak"><span>連對</span><span class="sdot on"></span><span class="sdot on"></span><span class="sdot"></span></div><button class="btn pri sm">開始重練 ▶</button></div>
+</div>
+<div class="duecard">
+<div class="dc-top"><span class="pill" style="background:#e3eaf0;color:#7d97b0">● 工程數學</span><span class="cpill" style="background:#e3eaf0;color:#7d97b0">觀念不熟</span></div>
+<div class="dq">解 y″+4y′+4y=0 的通解型態判定</div>
+<div class="dc-meta">一階／二階常微分方程 · 111 高考</div>
+<div class="dc-foot"><div class="streak"><span>連對</span><span class="sdot"></span><span class="sdot"></span><span class="sdot"></span></div><button class="btn pri sm">開始重練 ▶</button></div>
+</div>
+</div>
+</div>
+<div class="wtop">
+<div class="winsight">
+<div class="wi-h"><b>📌 錯因洞察</b><span>把「為什麼錯」變成「不再錯」</span></div>
+<div class="wi-lead">你最常犯的是 <b style="color:#7d97b0">觀念不熟</b>（佔 33%）· 回去把章節觀念重讀一遍</div>
+<div class="causebars">
+<div class="cbar"><span class="ct">觀念不熟</span><span class="ctr"><i style="width:100%;background:#7d97b0"></i></span><span class="cn">3</span></div>
+<div class="cbar"><span class="ct">公式記錯</span><span class="ctr"><i style="width:67%;background:#a98fb8"></i></span><span class="cn">2</span></div>
+<div class="cbar"><span class="ct">計算粗心</span><span class="ctr"><i style="width:67%;background:#d2a96b"></i></span><span class="cn">2</span></div>
+<div class="cbar"><span class="ct">題意誤解</span><span class="ctr"><i style="width:33%;background:#86a98c"></i></span><span class="cn">1</span></div>
+<div class="cbar"><span class="ct">不會/沒學過</span><span class="ctr"><i style="width:33%;background:#c98b86"></i></span><span class="cn">1</span></div>
+<div class="cbar"><span class="ct">時間不夠</span><span class="ctr"><i style="width:33%;background:#b0a17a"></i></span><span class="cn">1</span></div>
+</div>
+<div class="wi-foot">最該補的科目：<b>工程數學</b>（3 題待消化）</div>
+</div>
+<div class="wstatcol">
+<div class="wstatgrid">
+<div class="wstat"><div class="wsv disp" style="color:var(--bad)">5</div><div class="wsl">今日待複習</div></div>
+<div class="wstat"><div class="wsv disp">9</div><div class="wsl">錯題總數</div></div>
+<div class="wstat"><div class="wsv disp" style="color:var(--warn)">5</div><div class="wsl">複習中</div></div>
+<div class="wstat"><div class="wsv disp" style="color:var(--good)">2</div><div class="wsl">已攻克</div></div>
+</div>
+<div class="masterbar"><div class="mbl"><span>攻克率</span><b class="disp">22%</b></div><div class="mbtrack"><i style="width:22%"></i></div></div>
+<button class="btn pri" style="justify-content:center">＋ 快速新增錯題</button>
+</div>
+</div>
+<div class="sec">
+<div class="sechd"><h3>📊 未來 14 天複習量</h3><span class="badge">提前看負擔 · 避免某天爆量</span></div>
+<div class="schtimeline">
+<div class="schday today"><div class="schbarwrap"><div class="schseg" style="height:60%;background:#7d97b0"></div><div class="schseg" style="height:20%;background:#c98b86"></div><div class="schseg" style="height:20%;background:#b0a17a"></div></div><div class="schcnt">5</div><div class="schlbl">7/7</div><div class="schwd">週二</div></div>
+<div class="schday"><div class="schbarwrap"><div class="schseg" style="height:40%;background:#86a98c"></div></div><div class="schcnt">2</div><div class="schlbl">7/8</div><div class="schwd">週三</div></div>
+<div class="schday"><div class="schbarwrap"><div class="schseg" style="height:20%;background:#ece4f0"></div><div class="schseg" style="height:20%;background:#a98fb8"></div></div><div class="schcnt">2</div><div class="schlbl">7/9</div><div class="schwd">週四</div></div>
+<div class="schday"><div class="schbarwrap"><div class="schdot"></div></div><div class="schcnt zero">0</div><div class="schlbl">7/10</div><div class="schwd">週五</div></div>
+<div class="schday wkend"><div class="schbarwrap"><div class="schseg" style="height:40%;background:#c8a98c"></div></div><div class="schcnt">2</div><div class="schlbl">7/11</div><div class="schwd">週六</div></div>
+<div class="schday wkend"><div class="schbarwrap"><div class="schdot"></div></div><div class="schcnt zero">0</div><div class="schlbl">7/12</div><div class="schwd">週日</div></div>
+<div class="schday"><div class="schbarwrap"><div class="schseg" style="height:20%;background:#7d97b0"></div></div><div class="schcnt">1</div><div class="schlbl">7/13</div><div class="schwd">週一</div></div>
+<div class="schday"><div class="schbarwrap"><div class="schdot"></div></div><div class="schcnt zero">0</div><div class="schlbl">7/14</div><div class="schwd">週二</div></div>
+<div class="schday"><div class="schbarwrap"><div class="schseg" style="height:20%;background:#86a98c"></div></div><div class="schcnt">1</div><div class="schlbl">7/15</div><div class="schwd">週三</div></div>
+<div class="schday"><div class="schbarwrap"><div class="schdot"></div></div><div class="schcnt zero">0</div><div class="schlbl">7/16</div><div class="schwd">週四</div></div>
+<div class="schday"><div class="schbarwrap"><div class="schseg" style="height:40%;background:#c98b86"></div></div><div class="schcnt">2</div><div class="schlbl">7/17</div><div class="schwd">週五</div></div>
+<div class="schday wkend"><div class="schbarwrap"><div class="schdot"></div></div><div class="schcnt zero">0</div><div class="schlbl">7/18</div><div class="schwd">週六</div></div>
+<div class="schday wkend"><div class="schbarwrap"><div class="schdot"></div></div><div class="schcnt zero">0</div><div class="schlbl">7/19</div><div class="schwd">週日</div></div>
+<div class="schday"><div class="schbarwrap"><div class="schseg" style="height:20%;background:#b0a17a"></div></div><div class="schcnt">1</div><div class="schlbl">7/20</div><div class="schwd">週一</div></div>
+</div>
+</div>
+<div class="schgrid">
+<div class="sec">
+<div class="sechd"><h3>⏳ 間隔複習階段</h3><span class="badge">錯題走向攻克的漏斗</span></div>
+<div class="funnel">
+<div class="fnrow"><div class="fnhead"><span class="fndot" style="background:var(--bad)"></span><b>新錯題</b><span class="fndesc">剛記下 · 明天首複</span><span class="fnn disp">2</span></div><div class="fntrack"><i style="width:50%;background:var(--bad)"></i></div></div>
+<div class="fnrow"><div class="fnhead"><span class="fndot" style="background:#d2a96b"></span><b>第一輪</b><span class="fndesc">答對 1 次 · 隔 3 天</span><span class="fnn disp">3</span></div><div class="fntrack"><i style="width:75%;background:#d2a96b"></i></div></div>
+<div class="fnrow"><div class="fnhead"><span class="fndot" style="background:#b0a17a"></span><b>鞏固中</b><span class="fndesc">答對 2 次 · 隔 7 天</span><span class="fnn disp">2</span></div><div class="fntrack"><i style="width:50%;background:#b0a17a"></i></div></div>
+<div class="fnrow"><div class="fnhead"><span class="fndot" style="background:var(--good)"></span><b>已攻克</b><span class="fndesc">連對 3 次 · 封存</span><span class="fnn disp">2</span></div><div class="fntrack"><i style="width:50%;background:var(--good)"></i></div></div>
+</div>
+<div class="schhow">📖 間隔複習法：答對一次就把下次複習往後推（1→3→7→14→30 天），連續答對 3 次代表真的記住、自動封存。答錯則打回明天重練。</div>
+</div>
+<div class="sec">
+<div class="sechd"><h3>✎ 自測紀錄 <span class="badge">NotebookLM 出題 → 記結果 → 匯出弱點檔</span></h3><button class="btn sm">⬇ 匯出 .md</button></div>
+<div class="dqueue">
+<div class="quizrow"><div><div class="quizname">拉普拉斯轉換與反轉換</div><div class="quizsub">7/6 · NotebookLM 出 5 題</div></div><span class="quizscore" style="color:var(--good)">4/5</span><span class="quizweak">弱點：反轉換的部分分式</span><a class="nopen">↗</a><button class="btn ghost sm">✎</button></div>
+<div class="quizrow"><div><div class="quizname">三相功率分析</div><div class="quizsub">7/4 · NotebookLM 出 5 題</div></div><span class="quizscore" style="color:var(--warn)">3/5</span><span class="quizweak">弱點：不平衡負載的中性線電流</span><a class="nopen">↗</a><button class="btn ghost sm">✎</button></div>
+<div class="quizrow"><div><div class="quizname">BJT 放大器</div><div class="quizsub">7/2 · NotebookLM 出 5 題</div></div><span class="quizscore" style="color:var(--bad)">2/5</span><span class="quizweak">弱點：CB 組態的輸入阻抗推導</span><a class="nopen">↗</a><button class="btn ghost sm">✎</button></div>
+</div>
+<button class="btn" style="justify-content:center">＋ 記錄一次自測</button>
+</div>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{showFormula}}" hint-placeholder-val="{{ false }}">
+<div class="screen" data-screen-label="公式庫">
+<div class="ftoolbar">
+<div class="fsearch"><span class="fsicon">⌕</span><input type="text" placeholder="搜尋公式、關鍵字、科目…"></div>
+<button class="pillbtn on">★ 只看常忘 (7)</button>
+<button class="btn pri">⚡ 每日閃卡</button>
+</div>
+<div class="fchips"><button class="fchip on">全部</button><button class="fchip">工程數學</button><button class="fchip">電路學</button><button class="fchip">電子學</button><button class="fchip">電機機械</button><button class="fchip">電力系統</button><button class="fchip">工業配電</button></div>
+<div class="fcount">共 16 條公式 · ☆ 點星號標記常忘，收進每日閃卡</div>
+<div class="fogrid">
+<div class="fcard forgot">
+<div class="fhead"><span class="fsubj" style="background:#e3eaf0;color:#7d97b0">工程數學</span><button class="starbtn on">★</button></div>
+<div class="fname">拉氏轉換 · 微分性質</div>
+<div class="fmath">ℒ{f⁽ⁿ⁾(t)} = sⁿF(s) − Σ sⁿ⁻ᵏ f⁽ᵏ⁻¹⁾(0)</div>
+<div class="fdesc">解 ODE 初值問題的核心，注意初始條件項不可漏。</div>
+<div class="ftags"><span class="ftag">#拉氏</span><span class="ftag">#ODE</span><span class="ftag">#初值</span></div>
+</div>
+<div class="fcard forgot">
+<div class="fhead"><span class="fsubj" style="background:#e4ede6;color:#86a98c">電路學</span><button class="starbtn on">★</button></div>
+<div class="fname">一階 RC 暫態響應</div>
+<div class="fmath">v(t) = v(∞) + [v(0⁺) − v(∞)]e^(−t/τ)</div>
+<div class="fdesc">三要素法：初值、終值、時間常數，秒解暫態。</div>
+<div class="ftags"><span class="ftag">#暫態</span><span class="ftag">#RC</span></div>
+</div>
+<div class="fcard forgot">
+<div class="fhead"><span class="fsubj" style="background:#f2e2e0;color:#c98b86">電力系統</span><button class="starbtn on">★</button></div>
+<div class="fname">單線接地故障電流</div>
+<div class="fmath">Iₐ = 3Eₐ / (Z₁+Z₂+Z₀+3Z_f)</div>
+<div class="fdesc">對稱成分法經典，分母三序阻抗加 3Z_f。</div>
+<div class="ftags"><span class="ftag">#故障</span><span class="ftag">#對稱成分</span></div>
+</div>
+<div class="fcard forgot">
+<div class="fhead"><span class="fsubj" style="background:#ece4f0;color:#a98fb8">電子學</span><button class="starbtn on">★</button></div>
+<div class="fname">BJT 小訊號跨導</div>
+<div class="fmath">g_m = I_C / V_T,　V_T ≈ 26 mV</div>
+<div class="fdesc">先定直流工作點 I_C 再算增益。</div>
+<div class="ftags"><span class="ftag">#BJT</span><span class="ftag">#小訊號</span></div>
+</div>
+<div class="fcard forgot">
+<div class="fhead"><span class="fsubj" style="background:#f1e8df;color:#c8a98c">電機機械</span><button class="starbtn on">★</button></div>
+<div class="fname">感應機轉差率</div>
+<div class="fmath">s = (nₛ − nᵣ)/nₛ,　nₛ = 120f/P</div>
+<div class="fdesc">同步轉速看極數與頻率。</div>
+<div class="ftags"><span class="ftag">#感應機</span><span class="ftag">#轉差</span></div>
+</div>
+<div class="fcard forgot">
+<div class="fhead"><span class="fsubj" style="background:#f2e2e0;color:#c98b86">電力系統</span><button class="starbtn on">★</button></div>
+<div class="fname">標么值</div>
+<div class="fmath">Z_pu = Z_actual / Z_base,　Z_base = V²/S</div>
+<div class="fdesc">換基底時用平方比例式。</div>
+<div class="ftags"><span class="ftag">#標么</span><span class="ftag">#基底</span></div>
+</div>
+</div>
+</div>
+</sc-if>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { screen: 'home', chView: 'table' };
+  renderVals() {
+    const s = this.state.screen;
+    const titles = {home:['首頁','HOME · TONIGHT MISSION'], ch:['章節與課程','SYLLABUS & COURSES · 6 SUBJECTS'], rev:['複習','REVIEW · SPACED REPETITION'], formula:['公式庫','FORMULA VAULT · 16 ENTRIES']};
+    return {
+      showHome: s==='home', showCh: s==='ch', showRev: s==='rev', showFormula: s==='formula',
+      homeOn: s==='home'?'on':'', chOn: s==='ch'?'on':'', revOn: s==='rev'?'on':'', formulaOn: s==='formula'?'on':'',
+      goHome: ()=>this.setState({screen:'home'}), goCh: ()=>this.setState({screen:'ch'}),
+      goRev: ()=>this.setState({screen:'rev'}), goFormula: ()=>this.setState({screen:'formula'}),
+      pageTitle: titles[s][0], pageEng: titles[s][1],
+      chTable: this.state.chView==='table', chCards: this.state.chView==='cards', chPath: this.state.chView==='path',
+      vTableCls: 'schip'+(this.state.chView==='table'?' on':''), vCardsCls: 'schip'+(this.state.chView==='cards'?' on':''), vPathCls: 'schip'+(this.state.chView==='path'?' on':''),
+      setTable: ()=>this.setState({chView:'table'}), setCards: ()=>this.setState({chView:'cards'}), setPath: ()=>this.setState({chView:'path'}),
+    };
+  }
+}
+</script>
+</body>
+</html>
