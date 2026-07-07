@@ -16,5 +16,9 @@ services:
         value: 138e5f939f79405d9b072fc61900e920
       - key: APP_KEY
         sync: false
+      - key: AUTH_USER
+        sync: false
+      - key: AUTH_PASS
+        sync: false
       - key: NOTION_HOME_URL
         sync: false

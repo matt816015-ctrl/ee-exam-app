@@ -3,12 +3,31 @@
 import express from "express";
 import compression from "compression";
 import path from "path";
+import crypto from "crypto";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 app.use(compression());
 app.use(express.json());
+
+// ---- 全站帳號密碼保護：設定 AUTH_USER / AUTH_PASS 後，開任何頁面都需登入（/api/health 除外，供 Render 健康檢查）----
+const AUTH_USER = process.env.AUTH_USER || "";
+const AUTH_PASS = process.env.AUTH_PASS || "";
+function safeEq(a, b) { const A = Buffer.from(String(a)), B = Buffer.from(String(b)); return A.length === B.length && crypto.timingSafeEqual(A, B); }
+app.use((req, res, next) => {
+  if (!AUTH_USER || !AUTH_PASS) return next();      // 未設定則不啟用（本機開發相容）
+  if (req.path === "/api/health") return next();
+  const m = /^Basic (.+)$/.exec(req.get("authorization") || "");
+  if (m) {
+    const cred = Buffer.from(m[1], "base64").toString();
+    const sep = cred.indexOf(":");
+    if (sep > -1 && safeEq(cred.slice(0, sep), AUTH_USER) && safeEq(cred.slice(sep + 1), AUTH_PASS)) return next();
+  }
+  res.set("WWW-Authenticate", 'Basic realm="ee-exam-app", charset="UTF-8"');
+  res.status(401).send("Unauthorized");
+});
+
 app.use(express.static(path.join(__dirname, "public"), { maxAge: "7d", index: ["index.html"], setHeaders(res, p) { if (p.endsWith(".html")) res.setHeader("Cache-Control", "no-cache"); } }));
 
 // ---- API 金鑰驗證：設定 APP_KEY 環境變數後，所有 /api 請求須帶 X-App-Key（health 除外）----
